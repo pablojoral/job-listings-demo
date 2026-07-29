@@ -2,12 +2,39 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "types": [
+      "jest"
+    ],
     "paths": {
       "@/*": [
         "./src/*"
       ],
       "@/assets/*": [
         "./assets/*"
+      ],
+      "theme/*": [
+        "./src/theme/*"
+      ],
+      "components/*": [
+        "./src/components/*"
+      ],
+      "features/*": [
+        "./src/features/*"
+      ],
+      "services/*": [
+        "./src/services/*"
+      ],
+      "query/*": [
+        "./src/query/*"
+      ],
+      "models/*": [
+        "./src/models/*"
+      ],
+      "hooks/*": [
+        "./src/hooks/*"
+      ],
+      "utils/*": [
+        "./src/utils/*"
       ]
     }
   },
