@@ -1,3 +1,3 @@
-import { ComponentsShowcase } from '@/features/ComponentsShowcase/ComponentsShowcase';
+import { JobList } from '@/features/JobList/JobList';
 
-export default ComponentsShowcase;
+export default JobList;
