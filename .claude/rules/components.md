@@ -4,32 +4,21 @@ description: Component architecture rules for React Native screens and component
 
 # Component Rules
 
-Component/screen files and folders are kebab-case (`job-card.tsx`), matching the existing
-codebase (`themed-text.tsx`). Theme hooks are the one exception — file and export both use
-`use<ComponentName>Theme` (e.g. `useJobCardTheme.ts`), per styling.md rule 7. Component and
-class identifiers stay PascalCase; other hooks stay camelCase with a `use` prefix.
-
-**Exception — Expo Router route files.** Files under `src/app/` are routes and must use a
-`default export`, per [Expo Router's file-based routing](https://docs.expo.dev/versions/v57.0.0/router/introduction/) (see rule 7). Keep route files thin: they render a real,
-named-export screen component that lives elsewhere and follows every rule below.
-
----
-
 ## 1. One component per file
 
 Each file exports exactly one React component. No helper components defined in the same file.
 
 ```tsx
-// BAD — JobsListHeader defined inside job-list.tsx
-const JobsListHeader = () => { ... };
+// BAD — JobFiltersHeader defined inside JobList.tsx
+const JobFiltersHeader = () => { ... };
 export const JobList = () => { ... };
 
 // GOOD — split into separate files
-// features/jobs-list/components/jobs-list-header/jobs-list-header.tsx
-export const JobsListHeader = () => { ... };
+// features/JobList/components/JobFiltersHeader/JobFiltersHeader.tsx
+export const JobFiltersHeader = () => { ... };
 
-// features/jobs-list/job-list.tsx
-import { JobsListHeader } from './components/jobs-list-header/jobs-list-header';
+// features/JobList/JobList.tsx
+import { JobFiltersHeader } from './components/JobFiltersHeader/JobFiltersHeader';
 export const JobList = () => { ... };
 ```
 
@@ -56,10 +45,10 @@ export const JobList = () => {
 The component file contains only JSX. All data derivation, transformations, event handlers, query calls, store reads, and computed values belong in a `use<ComponentName>.ts` hook co-located next to the component.
 
 ```
-features/jobs-list/
-  job-list.tsx               ← only JSX + hook call
+features/JobList/
+  JobList.tsx               ← only JSX + hook call
   hooks/
-    use-job-list.ts           ← query, pagination, derived state
+    useJobListScreen.ts     ← query, pagination, derived state
 ```
 
 ```tsx
@@ -72,17 +61,17 @@ export const JobList = () => {
 };
 
 // GOOD — all logic in hook
-// hooks/use-job-list.ts
-export const useJobList = (filters: JobFilters) => {
+// hooks/useJobListScreen.ts
+export const useJobListScreen = (filters: JobFilters) => {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useJobs(filters);
   const jobs = data?.pages.flatMap(p => p.data) ?? [];
   const handleEndReached = () => { if (hasNextPage) fetchNextPage(); };
   return { jobs, isLoading, isFetchingNextPage, handleEndReached };
 };
 
-// job-list.tsx
+// JobList.tsx
 export const JobList = () => {
-  const { jobs, isLoading, isFetchingNextPage, handleEndReached } = useJobList(filters);
+  const { jobs, isLoading, isFetchingNextPage, handleEndReached } = useJobListScreen(filters);
   const { styles } = useJobListTheme();
   ...
 };
@@ -96,23 +85,20 @@ Pure formatting/utility functions (e.g. `formatSalaryRange`, `formatPostedDate`)
 
 When a custom component exists, always use it. Never reach for the bare RN primitive.
 
-| Instead of                                 | Use                                            |
-| ------------------------------------------ | ----------------------------------------------- |
-| `<Text>` from `react-native`               | `<ThemedText>` from `@/components/themed-text`   |
-| `<View>` from `react-native`               | `<ThemedView>` from `@/components/themed-view`   |
+| Instead of                                 | Use                                                                         |
+| ------------------------------------------ | ----------------------------------------------------------------------------|
+| `<Text>` from `react-native`               | `<Text>` from `components/Text/Text`                                        |
+| `<ActivityIndicator>` from `react-native`  | `<ActivityIndicator>` from `components/ActivityIndicator/ActivityIndicator` |
+| `<TouchableOpacity>` for a labelled action | `<Button>` from `components/Button/Button`                                  |
 
 ```tsx
 // BAD
-import { Text, View } from 'react-native';
+import { Text, ActivityIndicator } from 'react-native';
 
 // GOOD
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Text } from 'components/Text/Text';
+import { ActivityIndicator } from 'components/ActivityIndicator/ActivityIndicator';
 ```
-
-For any other RN primitive that needs a custom wrapper (`ActivityIndicator`, `Button`, etc.),
-add it under `src/components/` (e.g. `src/components/button/button.tsx`) following this same
-rule set instead of reaching for the bare RN primitive inline.
 
 ---
 
@@ -128,8 +114,8 @@ Signs you should extract:
 
 ```
 src/components/
-  job-card/
-    job-card.tsx
+  JobCard/
+    JobCard.tsx
     theme/
       useJobCardTheme.ts
 ```
@@ -165,13 +151,14 @@ export default function JobList() { ... }
 export const JobList = () => { ... };
 ```
 
-**Exception:** route files under `src/app/` (Expo Router) must use `default export` — that's
-how Expo Router registers a screen for a route. Keep the route file to an import + default
-export of a named component so the rest of the rule set still applies to the actual logic:
+**Exception:** Expo Router resolves each route from the default export of its file under
+`src/app/`, so route files must use `default export`. Keep the route file to an import +
+default export of a named component so the rest of the rule set still applies to the actual
+logic:
 
 ```tsx
 // src/app/jobs/[id].tsx
-import { JobDetail } from '@/features/job-detail/job-detail';
+import { JobDetail } from '@/features/JobDetail/JobDetail';
 export default JobDetail;
 ```
 
@@ -214,51 +201,47 @@ ListEmptyComponent={
 }
 
 // GOOD — own file
-// components/jobs-empty-state/jobs-empty-state.tsx
+// components/JobsEmptyState/JobsEmptyState.tsx
 export const JobsEmptyState = () => { ... };
 ```
 
 ---
 
-## 10. Copy and labels live in a dedicated `use[Component]Strings` hook
+## 10. Strings and labels always live in a dedicated `use[Component]Strings` hook
 
-Never hardcode more than a couple of literal strings inline in a logic hook. Once a component
-has more than one or two labels, extract them into a separate `use[Component]Strings.ts` file
-co-located in the same `hooks/` folder; the logic hook imports from it. This project has no
-i18n library installed — if one is added later, that hook is where the `useTranslation`/`t()`
-calls go, and no other file needs to change.
+Never call `useTranslation` or `t()` inside a logic hook (e.g. `useMyScreen.ts`). All translated strings must be extracted into a separate `use[Component]Strings.ts` file co-located in the same `hooks/` folder. The logic hook imports from it.
 
 ```
-features/job-list/hooks/
-  use-job-list.ts          ← logic only — no inline copy
-  use-job-list-strings.ts  ← all label/copy strings live here
+features/JobList/hooks/
+  useJobList.ts         ← logic only — no useTranslation
+  useJobListStrings.ts  ← all t() calls live here
 ```
 
 ```ts
-// BAD — copy mixed into logic hook
+// BAD — translation mixed into logic hook
 export const useJobList = () => {
-  const title = 'Open positions';
-  const emptyLabel = 'No jobs match your filters.';
+  const { t } = useTranslation('common');
+  const title = t('jobList.title');
   const [filters, setFilters] = useState({});
-  return { title, emptyLabel, filters, setFilters };
+  return { title, filters, setFilters };
 };
 
-// GOOD — copy isolated
-// use-job-list-strings.ts
-export const useJobListStrings = () => ({
-  title: 'Open positions',
-  emptyLabel: 'No jobs match your filters.',
-});
+// GOOD — strings isolated
+// useJobListStrings.ts
+export const useJobListStrings = () => {
+  const { t } = useTranslation('common');
+  return { title: t('jobList.title') };
+};
 
-// use-job-list.ts
+// useJobList.ts
 export const useJobList = () => {
-  const { title, emptyLabel } = useJobListStrings();
+  const { title } = useJobListStrings();
   const [filters, setFilters] = useState({});
-  return { title, emptyLabel, filters, setFilters };
+  return { title, filters, setFilters };
 };
 ```
 
-If a hook contains **only** copy and no logic, name the file `use[Component]Strings.ts` directly — do not create a separate empty logic hook.
+If a hook contains **only** translated strings and no logic, name the file `use[Component]Strings.ts` directly — do not create a separate empty logic hook.
 
 ---
 

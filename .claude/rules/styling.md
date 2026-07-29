@@ -21,42 +21,11 @@ const style = {
 };
 ```
 
-Shape for `@/constants/theme.ts` / `@/hooks/use-theme.ts`:
-
-```ts
-// @/constants/theme.ts
-export const spacing = {
-  'spacing-xs': 4, 'spacing-sm': 8, 'spacing-md': 16, 'spacing-lg': 24, 'spacing-xl': 32,
-} as const;
-
-export const cornerRad = {
-  'corner-rad-sm': 4, 'corner-rad-md': 8, 'corner-rad-lg': 16,
-} as const;
-
-export const Colors = {
-  light: {
-    surfaceColor: { 'surface-background': '#ffffff', 'surface-primary': '#F0F0F3', 'surface-selected': '#E0E1E6' },
-    fontColor: { 'font-primary': '#000000', 'font-secondary': '#60646C' },
-    borderColor: { 'border-primary': '#E0E1E6', 'border-disabled': '#D0D0D5' },
-  },
-  dark: { /* mirrored dark values */ },
-} as const;
-```
-
-```ts
-// @/hooks/use-theme.ts
-export function useTheme() {
-  const scheme = useColorScheme();
-  const resolved = scheme === 'unspecified' ? 'light' : scheme;
-  return { ...Colors[resolved], spacing, cornerRad };
-}
-```
-
 Allowed raw values (structurally necessary, not design tokens):
 - `flex: 1`, `flexGrow: 1`, `flexShrink: 1`
 - `position: 'absolute'`, `overflow: 'hidden'`
 - `width: '100%'`, `aspectRatio` when purely geometric
-- Layout values derived from safe-area insets (`useSafeAreaInsets`) or `BottomTabInset`
+- Layout values derived from `theme.topInset` / `theme.bottomInset`
 
 ---
 
@@ -84,8 +53,8 @@ Exception: dynamic transforms on Reanimated animated values, because the animate
 Every screen and component has its own `use<Name>Theme` hook, co-located in a `theme/` subfolder.
 
 ```
-src/features/job-list/
-  job-list.tsx
+src/features/JobList/
+  JobList.tsx
   theme/
     useJobListTheme.ts
 ```
@@ -99,7 +68,7 @@ The hook must:
 ```ts
 import { StyleSheet } from 'react-native';
 import { useMemo } from 'react';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from 'theme/hooks/useTheme';
 
 export const useJobListTheme = (isActive: boolean) => {
   const theme = useTheme();
@@ -155,7 +124,7 @@ Do **not** call `StyleSheet.create` inside `useMemo` — `StyleSheet.create` is 
 Do not define `const styles = StyleSheet.create(...)` at the top level of a screen or component file. All styles — even purely structural ones — belong in the theme hook.
 
 ```ts
-// BAD — top-level in job-list.tsx
+// BAD — top-level in JobList.tsx
 const styles = StyleSheet.create({ container: { flex: 1 } });
 
 // GOOD — in useJobListTheme.ts

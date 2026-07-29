@@ -2,8 +2,6 @@
 description: Testing rules for this project
 ---
 
-<!-- @format -->
-
 # Testing Rules
 
 ## Stack
@@ -24,10 +22,10 @@ Tests run on **Jest** with the **`@react-native/jest-preset`** preset and
 Each test sits next to the unit it covers; only cross-cutting harness code lives in `test/`.
 
 ```
-src/features/jobs-list/utils/sort-jobs.ts
-src/features/jobs-list/utils/sort-jobs.test.ts   ← beside its unit
-test/                                            ← shared helpers only
-  fixtures.ts  render-with-query.tsx
+src/features/JobList/utils/sortJobs.ts
+src/features/JobList/utils/sortJobs.test.ts   ← beside its unit
+test/                                         ← shared helpers only
+  fixtures.ts  renderWithQuery.tsx
 ```
 
 ---
@@ -36,30 +34,30 @@ test/                                            ← shared helpers only
 
 Every test controls its inputs. Nothing hits the OS clock or the network.
 
-| Dependency                                               | How to control it                               |
-| -------------------------------------------------------- | ----------------------------------------------- |
+| Dependency | How to control it |
+|---|---|
 | `Date.now()` / relative dates (e.g. "posted 2 days ago") | `jest.useFakeTimers().setSystemTime(fixedDate)` |
-| HTTP (`apiClient`/axios)                                 | `jest.mock('services/api/api-client', …)`       |
-| Safe-area insets                                         | mock globally in `jest.setup.ts`                |
+| HTTP (`apiClient`/axios) | `jest.mock('services/api/apiClient', …)` |
+| Safe-area insets | mock globally in `jest.setup.ts` |
 
 ```ts
 // BAD — depends on the wall clock; assertion drifts over time
-expect(formatPostedDate(iso)).toBe("2 days ago");
+expect(formatPostedDate(iso)).toBe('2 days ago');
 
 // GOOD — fix the clock first
-jest.useFakeTimers().setSystemTime(new Date("2020-06-15T12:00:00Z"));
-expect(formatPostedDate(twoDaysBefore)).toBe("2 days ago");
+jest.useFakeTimers().setSystemTime(new Date('2020-06-15T12:00:00Z'));
+expect(formatPostedDate(twoDaysBefore)).toBe('2 days ago');
 ```
 
 ---
 
-## 3. Use shared test helpers — don't hand-roll them
+## 3. Use the shared test helpers — don't hand-roll them
 
-| Need                                         | Use (from `test/`)                                                |
-| -------------------------------------------- | ----------------------------------------------------------------- |
-| A domain fixture                             | `makeJob(overrides)` / `makeCompany(overrides)` — `test/fixtures` |
-| Render a component needing query + safe-area | `renderWithQuery(ui)` — `test/render-with-query`                  |
-| Render a hook needing a QueryClient          | `renderHookWithQuery(hook)` — `test/render-with-query`            |
+| Need | Use (from `test/`) |
+|---|---|
+| A domain fixture | `makeJob(overrides)` / `makeCompany(overrides)` — `test/fixtures` |
+| Render a component needing query + safe-area | `renderWithQuery(ui)` — `test/renderWithQuery` |
+| Render a hook needing a QueryClient | `renderHookWithQuery(hook)` — `test/renderWithQuery` |
 
 The query wrappers create a **fresh client with `retry: false`** so failing queries settle
 immediately. Never build an ad-hoc `QueryClientProvider` or inline fixture objects.
@@ -68,9 +66,7 @@ immediately. Never build an ad-hoc `QueryClientProvider` or inline fixture objec
 // BAD — bespoke wrapper + retries left on (hangs on error paths)
 renderHook(() => useJobs(filters), {
   wrapper: ({ children }) => (
-    <QueryClientProvider client={new QueryClient()}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
   ),
 });
 
@@ -84,15 +80,15 @@ const { result } = renderHookWithQuery(() => useJobs(filters));
 
 Test a layer for real; replace only the layer beneath it.
 
-| Unit under test                                     | Mock this                                          |
-| --------------------------------------------------- | -------------------------------------------------- |
-| A service (`JobsService`)                           | `services/api/api-client`                          |
-| A query hook (`useJobs`)                            | the service (`services/api/services/jobs-service`) |
-| A screen / component hook (`useJobList`, `JobList`) | the query hook (`query/jobs/use-jobs`)             |
+| Unit under test | Mock this |
+|---|---|
+| A service (`JobsService`) | `services/api/apiClient` |
+| A query hook (`useJobs`) | the service (`services/api/services/JobsService`) |
+| A screen / component hook (`useJobListScreen`, `JobList`) | the query hook (`query/Jobs/useJobs`) |
 
 ```ts
 // GOOD — query-hook test mocks the service, exercises real TanStack Query wiring
-jest.mock("services/api/services/jobs-service", () => ({
+jest.mock('services/api/services/JobsService', () => ({
   jobsService: { list: jest.fn() },
 }));
 ```
@@ -112,8 +108,8 @@ Never assert internal state, style objects, or private structure.
 expect(instance.state.isSaved).toBe(true);
 
 // GOOD — drives the UI and asserts the effect
-fireEvent.press(getByText("Save job"));
-expect(onSave).toHaveBeenCalledWith("job-1");
+fireEvent.press(getByText('Save job'));
+expect(onSave).toHaveBeenCalledWith('job-1');
 ```
 
 - Prefer the queries returned by `render` (`getByText`, `queryByText`, `getAllByText`).
@@ -149,10 +145,7 @@ Pass only the fields a test cares about.
 
 ```ts
 // GOOD — explicit, minimal, deterministic
-const job = makeJob({
-  title: "Senior Backend Engineer",
-  company: makeCompany({ name: "Acme" }),
-});
+const job = makeJob({ title: 'Senior Backend Engineer', company: makeCompany({ name: 'Acme' }) });
 ```
 
 ---
@@ -160,7 +153,7 @@ const job = makeJob({
 ## 8. Coverage: logic ~100%, thin wrappers get a smoke test
 
 Prioritize logic-heavy modules — pure utils, derivation hooks, services, and query hooks —
-toward full line/branch coverage. Thin presentational wrappers (`ThemedText`, `ThemedView`)
+toward full line/branch coverage. Thin presentational wrappers (`Text`, `ActivityIndicator`)
 need only a render/props smoke test.
 
 ---
@@ -168,7 +161,6 @@ need only a render/props smoke test.
 ## 9. Don't test these
 
 Call it out rather than silently skipping, but do not write tests for:
-
 - native module internals (RN/Reanimated behavior),
 - the real backend contract (would need the live server or MSW),
 - pixel/snapshot diffs — assert content and behavior instead.

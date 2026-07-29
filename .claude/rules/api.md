@@ -11,16 +11,16 @@ concerns. The API layer uses Axios and TanStack Query (`axios`, `@tanstack/react
 
 ```
 component / screen hook
-  └── src/query/<resource>/use-<action>-<resource>.ts     ← TanStack Query hook
-        └── src/services/api/services/<resource>-service.ts   ← service class
-              └── src/services/api/api-client.ts               ← single Axios instance
+  └── src/query/<Resource>/use<Action><Resource>.ts   ← TanStack Query hook
+        └── src/services/api/services/<Resource>Service.ts   ← service class
+              └── src/services/api/apiClient.ts              ← single Axios instance
 ```
 
 ---
 
 ## 1. Always use `apiClient` — never instantiate HTTP clients directly
 
-All HTTP calls must go through the shared Axios instance at `services/api/api-client.ts`. It
+All HTTP calls must go through the shared Axios instance at `services/api/apiClient.ts`. It
 handles base URL and timeout on every request — no auth token to inject.
 
 ```ts
@@ -32,7 +32,7 @@ const res = await axios.get('/jobs');
 fetch(`${API_BASE_URL}/jobs`);
 
 // GOOD
-import { apiClient } from 'services/api/api-client';
+import { apiClient } from 'services/api/apiClient';
 const res = await apiClient.get('/jobs');
 ```
 
@@ -43,8 +43,8 @@ const res = await apiClient.get('/jobs');
 Every resource has a dedicated service that extends `BaseService` and exports a singleton. No component, hook, or store may call `apiClient` directly.
 
 ```ts
-// services/api/services/jobs-service.ts
-import { BaseService } from '../base-service';
+// services/api/services/JobsService.ts
+import { BaseService } from '../BaseService';
 
 class JobsService extends BaseService {
   async list(filters: JobFilters = {}): Promise<JobsPage> {
@@ -58,7 +58,7 @@ export const jobsService = new JobsService();
 
 Rules for services:
 - Class name: `<Resource>Service`
-- File: `services/api/services/<resource>-service.ts` (kebab-case, matches the rest of the codebase)
+- File: `services/api/services/<Resource>Service.ts`
 - Always extends `BaseService`
 - Always exports a singleton: `export const <resource>Service = new <Resource>Service()`
 - Response types and request types are defined in the **same file** as the service
@@ -101,32 +101,32 @@ const { data, isLoading } = useJobs();
 
 ---
 
-## 4. All query and mutation hooks live under `src/query/<resource>/`
+## 4. All query and mutation hooks live under `src/query/<Resource>/`
 
 ```
 src/query/
   keys.ts
   client.ts
   provider.tsx
-  jobs/
-    use-jobs.ts             ← useInfiniteQuery (paginated listing)
-    use-job.ts               ← useQuery (job detail)
-  saved-jobs/
-    use-saved-jobs.ts        ← useQuery
-    use-save-job.ts          ← useMutation
-    use-remove-saved-job.ts  ← useMutation
+  Jobs/
+    useJobs.ts           ← useInfiniteQuery (paginated listing)
+    useJob.ts            ← useQuery (job detail)
+  SavedJobs/
+    useSavedJobs.ts      ← useQuery
+    useSaveJob.ts        ← useMutation
+    useRemoveSavedJob.ts ← useMutation
 ```
 
-Naming conventions (files kebab-case, hook export camelCase):
+Naming conventions:
 
 | Type | Pattern | Example |
 |---|---|---|
-| Query (list) | `use-<resources>.ts` | `use-saved-jobs.ts` |
-| Query (detail) | `use-<resource>.ts` | `use-job.ts` |
-| Infinite query | `use-<resources>.ts` | `use-jobs.ts` |
-| Mutation (create/action) | `use-<verb>-<resource>.ts` | `use-save-job.ts` |
-| Mutation (delete) | `use-remove-<resource>.ts` | `use-remove-saved-job.ts` |
-| Mutation (update) | `use-update-<resource>.ts` | `use-update-filters.ts` |
+| Query (list) | `use<Resource>s.ts` | `useSavedJobs.ts` |
+| Query (detail) | `use<Resource>.ts` | `useJob.ts` |
+| Infinite query | `use<Resource>s.ts` | `useJobs.ts` |
+| Mutation (create/action) | `use<Verb><Resource>.ts` | `useSaveJob.ts` |
+| Mutation (delete) | `useRemove<Resource>.ts` | `useRemoveSavedJob.ts` |
+| Mutation (update) | `useUpdate<Resource>.ts` | `useUpdateFilters.ts` |
 
 ---
 
@@ -154,8 +154,8 @@ export const qk = {
     detail: (id: string) => ['jobs', 'detail', id] as const,
   },
   savedJobs: {
-    root: ['saved-jobs'] as const,
-    list: () => ['saved-jobs', 'list'] as const,
+    root: ['savedJobs'] as const,
+    list: () => ['savedJobs', 'list'] as const,
   },
 };
 ```
@@ -193,7 +193,7 @@ Use a more specific key only when a root invalidation would be unnecessarily exp
 Types that describe the API contract belong in the service file, not in `models/`. Only domain model types that are shared across multiple services belong in `src/models/models.ts`.
 
 ```ts
-// services/api/services/jobs-service.ts
+// services/api/services/JobsService.ts
 
 // These types describe the API shape — they live here
 export interface Job { ... }
@@ -207,7 +207,7 @@ export const jobsService = new JobsService();
 The query hook then re-exports or imports these types directly from the service:
 
 ```ts
-import { jobsService, JobsPage } from 'services/api/services/jobs-service';
+import { jobsService, JobsPage } from 'services/api/services/JobsService';
 ```
 
 ---
