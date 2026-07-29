@@ -109,8 +109,7 @@ src/query/
   client.ts
   provider.tsx
   Jobs/
-    useJobs.ts           ← useInfiniteQuery (paginated listing)
-    useJob.ts            ← useQuery (job detail)
+    useJobs.ts           ← useQuery (list — see note below)
   SavedJobs/
     useSavedJobs.ts      ← useQuery
     useSaveJob.ts        ← useMutation
@@ -123,10 +122,15 @@ Naming conventions:
 |---|---|---|
 | Query (list) | `use<Resource>s.ts` | `useSavedJobs.ts` |
 | Query (detail) | `use<Resource>.ts` | `useJob.ts` |
-| Infinite query | `use<Resource>s.ts` | `useJobs.ts` |
+| Infinite query | `use<Resource>s.ts` | (use when the resource's own API genuinely supports server-side paging) |
 | Mutation (create/action) | `use<Verb><Resource>.ts` | `useSaveJob.ts` |
 | Mutation (delete) | `useRemove<Resource>.ts` | `useRemoveSavedJob.ts` |
 | Mutation (update) | `useUpdate<Resource>.ts` | `useUpdateFilters.ts` |
+
+`useJobs` is a plain `useQuery`, not `useInfiniteQuery` — Remotive's `/remote-jobs`
+has no pagination param (only a `limit` cap) and no per-id detail endpoint, so
+there's no `useJob.ts` either. Treat the infinite-query row above as the pattern
+for a future resource whose API actually supports real server-side paging.
 
 ---
 
@@ -217,13 +221,12 @@ import { jobsService, JobsPage } from 'services/api/services/JobsService';
 The global `queryClient` in `src/query/client.ts` defines the default `staleTime` (currently 30s). Override per-query only when the resource has meaningfully different freshness requirements.
 
 ```ts
-// GOOD — listings don't change second-to-second, refresh once a minute is enough
-export function useJobs(filters: JobFilters) {
-  return useInfiniteQuery({
+// GOOD — Remotive itself advises against polling more than a few times a day
+export function useJobs(filters: JobFilters = {}) {
+  return useQuery({
     queryKey: qk.jobs.list(filters),
-    queryFn: ({ pageParam }) => jobsService.list({ ...filters, page: pageParam }),
-    staleTime: 60 * 1000,
-    // ...
+    queryFn: () => jobsService.list(filters),
+    staleTime: 5 * 60 * 1000,
   });
 }
 ```
