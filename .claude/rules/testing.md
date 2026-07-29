@@ -6,14 +6,16 @@ description: Testing rules for this project
 
 ## Stack
 
-Tests run on **Jest** with the **`@react-native/jest-preset`** preset and
-**React Native Testing Library (RNTL)** for anything that renders. Config lives in
-`jest.config.js` + `jest.setup.ts`. Run with `yarn jest` (or `yarn test`).
+Tests run on **Jest** with the **`jest-expo`** preset and **React Native Testing
+Library (RNTL) v14** for anything that renders. Config lives in `jest.config.js` +
+`jest.setup.ts`. Run with `yarn jest` (or `yarn test`).
 
 - Use **RNTL** (`@testing-library/react-native`) to render components and hooks — never
-  bare `react-test-renderer` for component tests.
-- Pin RNTL to the major that pairs with `react-test-renderer` for the installed React/RN
-  version — check compatibility before upgrading across a major.
+  a bare test renderer directly.
+- RNTL v14 targets React 19's async rendering model: `render`, `renderHook`, `fireEvent`,
+  and `act` all return a `Promise` and must be `await`ed, even when the callback itself is
+  synchronous. It depends on the `test-renderer` package (not the deprecated
+  `react-test-renderer`) — keep both on the version line matching the installed React minor.
 
 ---
 
@@ -64,14 +66,14 @@ immediately. Never build an ad-hoc `QueryClientProvider` or inline fixture objec
 
 ```tsx
 // BAD — bespoke wrapper + retries left on (hangs on error paths)
-renderHook(() => useJobs(filters), {
+await renderHook(() => useJobs(filters), {
   wrapper: ({ children }) => (
     <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
   ),
 });
 
 // GOOD
-const { result } = renderHookWithQuery(() => useJobs(filters));
+const { result } = await renderHookWithQuery(() => useJobs(filters));
 ```
 
 ---
@@ -108,13 +110,15 @@ Never assert internal state, style objects, or private structure.
 expect(instance.state.isSaved).toBe(true);
 
 // GOOD — drives the UI and asserts the effect
-fireEvent.press(getByText('Save job'));
+await fireEvent.press(getByText('Save job'));
 expect(onSave).toHaveBeenCalledWith('job-1');
 ```
 
 - Prefer the queries returned by `render` (`getByText`, `queryByText`, `getAllByText`).
 - Use `queryBy*` to assert **absence** (returns `null`), `getBy*` when it must exist.
-- Reserve `UNSAFE_getByType` for things with no accessible handle (e.g. a spinner).
+- RNTL only renders host elements — there's no query for a composite component by type. For
+  an element with no accessible role or text (an icon, a bare spinner), give it a `testID`
+  and query with `getByTestId`.
 
 ---
 
@@ -124,16 +128,16 @@ Query hooks resolve asynchronously — assert their settled state via `waitFor`,
 `setTimeout` or an immediate read.
 
 ```ts
-const { result } = renderHookWithQuery(() => useJobs(filters));
+const { result } = await renderHookWithQuery(() => useJobs(filters));
 await waitFor(() => expect(result.current.isSuccess).toBe(true));
 expect(result.current.data).toEqual(jobsPage);
 ```
 
-State transitions from `act`-triggering calls (setters returned by a hook) are wrapped in
-`act(...)`:
+State transitions from `act`-triggering calls (setters returned by a hook) are always
+awaited — `act` returns a `Promise` even for a synchronous callback:
 
 ```ts
-act(() => result.current.setFilters({ remote: true }));
+await act(() => result.current.setFilters({ remote: true }));
 ```
 
 ---
