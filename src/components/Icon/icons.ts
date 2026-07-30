@@ -5,7 +5,7 @@
  * `react-native-svg` primitive at render time.
  */
 
-export type IconName = 'search' | 'map-pin' | 'chevron-down' | 'close';
+export type IconName = 'search' | 'map-pin' | 'chevron-down' | 'close' | 'filter' | 'building';
 
 export type IconShape =
   | { type: 'line'; x1: number; y1: number; x2: number; y2: number }
@@ -27,5 +27,19 @@ export const icons: Record<IconName, IconShape[]> = {
   close: [
     { type: 'line', x1: 18, y1: 6, x2: 6, y2: 18 },
     { type: 'line', x1: 6, y1: 6, x2: 18, y2: 18 },
+  ],
+  filter: [{ type: 'path', d: 'M22 3H2l8 9.46V19l4 2v-8.54L22 3z' }],
+  building: [
+    { type: 'rect', x: 4, y: 2, width: 16, height: 20, rx: 2 },
+    { type: 'path', d: 'M9 22v-4h6v4' },
+    { type: 'path', d: 'M8 6h.01' },
+    { type: 'path', d: 'M12 6h.01' },
+    { type: 'path', d: 'M16 6h.01' },
+    { type: 'path', d: 'M8 10h.01' },
+    { type: 'path', d: 'M12 10h.01' },
+    { type: 'path', d: 'M16 10h.01' },
+    { type: 'path', d: 'M8 14h.01' },
+    { type: 'path', d: 'M12 14h.01' },
+    { type: 'path', d: 'M16 14h.01' },
   ],
 };
