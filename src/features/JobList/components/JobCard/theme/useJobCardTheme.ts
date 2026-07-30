@@ -14,6 +14,15 @@ export const useJobCardTheme = () => {
       borderColor: theme.borderColor['border-primary'],
       gap: theme.spacing['spacing-sm'],
     },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing['spacing-sm'],
+    },
+    headerText: {
+      flex: 1,
+      gap: theme.spacing['spacing-xxs'],
+    },
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -23,12 +32,6 @@ export const useJobCardTheme = () => {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: theme.spacing['spacing-xs'],
-    },
-    tag: {
-      paddingVertical: theme.spacing['spacing-xxs'],
-      paddingHorizontal: theme.spacing['spacing-sm'],
-      borderRadius: theme.cornerRad['corner-rad-full'],
-      backgroundColor: theme.surfaceColor['surface-brand-soft'],
     },
   });
 

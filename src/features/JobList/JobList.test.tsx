@@ -1,22 +1,33 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { makeJob } from 'test/fixtures';
 
-jest.mock('query/Jobs/useJobs', () => ({ useJobs: jest.fn() }));
+import { useJobFiltersStore } from 'store/JobFilters/useJobFiltersStore';
 
+jest.mock('query/Jobs/useJobs', () => ({ useJobs: jest.fn() }));
+jest.mock('query/Categories/useCategories', () => ({ useCategories: jest.fn() }));
+
+import { useCategories } from 'query/Categories/useCategories';
 import { useJobs } from 'query/Jobs/useJobs';
 
 import { JobList } from './JobList';
 
 const mockUseJobs = useJobs as jest.Mock;
+const mockUseCategories = useCategories as jest.Mock;
 
 const baseResult = { data: undefined, isLoading: false, isError: false, isRefetching: false, refetch: jest.fn() };
 
 describe('JobList', () => {
+  beforeEach(async () => {
+    await act(() => useJobFiltersStore.getState().reset());
+    mockUseCategories.mockReturnValue({ data: [{ id: 19, name: 'Software Development', slug: 'software-dev' }] });
+  });
+
   it('shows a loading indicator while the query is loading', async () => {
     mockUseJobs.mockReturnValue({ ...baseResult, isLoading: true });
-    const { queryByText } = await render(<JobList />);
+    const { getByTestId, queryByText } = await render(<JobList />);
+    expect(getByTestId('jobs-loading-indicator')).toBeTruthy();
     expect(queryByText('Job Listings')).toBeNull();
   });
 
@@ -37,5 +48,124 @@ describe('JobList', () => {
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
     const { getByText } = await render(<JobList />);
     expect(getByText('Senior Backend Engineer')).toBeTruthy();
+  });
+
+  it('opens the filters modal from the Filters button', async () => {
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 0, totalJobCount: 0, jobs: [] } });
+    const { getByLabelText, queryByPlaceholderText } = await render(<JobList />);
+
+    expect(queryByPlaceholderText('Search by title or company')).toBeNull();
+    await fireEvent.press(getByLabelText('Filters'));
+    expect(queryByPlaceholderText('Search by title or company')).toBeTruthy();
+  });
+
+  it('closes the filters modal from its close button', async () => {
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 0, totalJobCount: 0, jobs: [] } });
+    const { getByLabelText, queryByPlaceholderText } = await render(<JobList />);
+
+    await fireEvent.press(getByLabelText('Filters'));
+    await fireEvent.press(getByLabelText('Close filters'));
+
+    expect(queryByPlaceholderText('Search by title or company')).toBeNull();
+  });
+
+  it('filters the rendered jobs by search text typed in the modal', async () => {
+    const backend = makeJob({ title: 'Senior Backend Engineer', companyName: 'Acme' });
+    const designer = makeJob({ title: 'Product Designer', companyName: 'Globex' });
+    mockUseJobs.mockReturnValue({
+      ...baseResult,
+      data: { jobCount: 2, totalJobCount: 2, jobs: [backend, designer] },
+    });
+
+    const { getByText, getByLabelText, queryByText, getByPlaceholderText } = await render(<JobList />);
+    expect(getByText('Senior Backend Engineer')).toBeTruthy();
+    expect(getByText('Product Designer')).toBeTruthy();
+
+    await fireEvent.press(getByLabelText('Filters'));
+    await fireEvent.changeText(getByPlaceholderText('Search by title or company'), 'backend');
+
+    expect(getByText('Senior Backend Engineer')).toBeTruthy();
+    expect(queryByText('Product Designer')).toBeNull();
+  });
+
+  it('shows the filtered empty state when filters exclude every job', async () => {
+    const job = makeJob({ title: 'Senior Backend Engineer' });
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
+
+    const { getByText, getByLabelText, queryByText, getByPlaceholderText } = await render(<JobList />);
+    await fireEvent.press(getByLabelText('Filters'));
+    await fireEvent.changeText(getByPlaceholderText('Search by title or company'), 'nonexistent role');
+
+    expect(getByText('No matching jobs')).toBeTruthy();
+    expect(queryByText('No jobs found')).toBeNull();
+  });
+
+  it('filters the rendered jobs by category selection', async () => {
+    const softwareJob = makeJob({ title: 'Backend Engineer', category: 'Software Development' });
+    const designJob = makeJob({ title: 'Product Designer', category: 'Design' });
+    mockUseJobs.mockReturnValue({
+      ...baseResult,
+      data: { jobCount: 2, totalJobCount: 2, jobs: [softwareJob, designJob] },
+    });
+
+    // The dropdown's options are native picker items (not pressable text), so
+    // the category selection is driven through the picker's native event seam.
+    const { getByText, getByLabelText, getByTestId, queryByText } = await render(<JobList />);
+    await fireEvent.press(getByLabelText('Filters'));
+    await fireEvent(getByTestId('category-dropdown'), 'selectionChange', {
+      nativeEvent: { selection: 'Software Development' },
+    });
+
+    expect(getByText('Backend Engineer')).toBeTruthy();
+    expect(queryByText('Product Designer')).toBeNull();
+  });
+
+  it('filters the rendered jobs by one or more selected job types', async () => {
+    const contractJob = makeJob({ title: 'Contract Engineer', jobType: 'contract' });
+    const fullTimeJob = makeJob({ title: 'Staff Engineer', jobType: 'full_time' });
+    mockUseJobs.mockReturnValue({
+      ...baseResult,
+      data: { jobCount: 2, totalJobCount: 2, jobs: [contractJob, fullTimeJob] },
+    });
+
+    const { getByText, getByLabelText, queryByText } = await render(<JobList />);
+    await fireEvent.press(getByLabelText('Filters'));
+    await fireEvent.press(getByText('Contract'));
+
+    expect(getByText('Contract Engineer')).toBeTruthy();
+    expect(queryByText('Staff Engineer')).toBeNull();
+  });
+
+  it('shows a badge with the active filter count on the Filters button', async () => {
+    const contractJob = makeJob({ jobType: 'contract' });
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [contractJob] } });
+
+    const { getByText, getByLabelText, queryByText } = await render(<JobList />);
+    expect(queryByText('1')).toBeNull();
+
+    await fireEvent.press(getByLabelText('Filters'));
+    await fireEvent.press(getByText('Contract'));
+    await fireEvent.press(getByLabelText('Close filters'));
+
+    expect(getByText('1')).toBeTruthy();
+  });
+
+  it('shows a live result count on the done button and closes the modal from it', async () => {
+    const backend = makeJob({ title: 'Senior Backend Engineer' });
+    const designer = makeJob({ title: 'Product Designer' });
+    mockUseJobs.mockReturnValue({
+      ...baseResult,
+      data: { jobCount: 2, totalJobCount: 2, jobs: [backend, designer] },
+    });
+
+    const { getByText, getByLabelText, getByPlaceholderText, queryByPlaceholderText } = await render(<JobList />);
+    await fireEvent.press(getByLabelText('Filters'));
+    expect(getByText('Show 2 jobs')).toBeTruthy();
+
+    await fireEvent.changeText(getByPlaceholderText('Search by title or company'), 'backend');
+    expect(getByText('Show 1 job')).toBeTruthy();
+
+    await fireEvent.press(getByText('Show 1 job'));
+    expect(queryByPlaceholderText('Search by title or company')).toBeNull();
   });
 });

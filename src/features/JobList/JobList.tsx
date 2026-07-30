@@ -3,8 +3,9 @@ import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActivityIndicator } from 'components/ActivityIndicator/ActivityIndicator';
-import { Text } from 'components/Text/Text';
 
+import { FiltersModal } from './components/FiltersModal/FiltersModal';
+import { JobListHeader } from './components/JobListHeader/JobListHeader';
 import { JobsEmptyState } from './components/JobsEmptyState/JobsEmptyState';
 import { JobsErrorState } from './components/JobsErrorState/JobsErrorState';
 import { useJobListScreen } from './hooks/useJobListScreen';
@@ -12,14 +13,29 @@ import { useJobListStrings } from './hooks/useJobListStrings';
 import { useJobListTheme } from './theme/useJobListTheme';
 
 export const JobList = () => {
-  const { jobs, isLoading, isError, isRefetching, handleRefresh, renderItem, keyExtractor } = useJobListScreen();
+  const {
+    jobs,
+    isLoading,
+    isError,
+    isRefetching,
+    activeFiltersCount,
+    emptyStateTitle,
+    emptyStateMessage,
+    filtersDoneLabel,
+    isFiltersVisible,
+    openFilters,
+    closeFilters,
+    handleRefresh,
+    renderItem,
+    keyExtractor,
+  } = useJobListScreen();
   const strings = useJobListStrings();
   const { styles } = useJobListTheme();
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" style={styles.centered} />
+        <ActivityIndicator size="large" style={styles.centered} testID="jobs-loading-indicator" />
       </SafeAreaView>
     );
   }
@@ -40,13 +56,23 @@ export const JobList = () => {
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <Text size="font-size-xxl" weight="font-weight-bold">
-            {strings.screenTitle}
-          </Text>
+          <JobListHeader
+            title={strings.screenTitle}
+            filtersLabel={strings.filtersButtonLabel}
+            activeFiltersCount={activeFiltersCount}
+            onOpenFilters={openFilters}
+          />
         }
-        ListEmptyComponent={<JobsEmptyState title={strings.emptyTitle} message={strings.emptyMessage} />}
+        ListEmptyComponent={<JobsEmptyState title={emptyStateTitle} message={emptyStateMessage} />}
         refreshing={isRefetching}
         onRefresh={handleRefresh}
+      />
+      <FiltersModal
+        visible={isFiltersVisible}
+        onClose={closeFilters}
+        title={strings.filtersTitle}
+        closeLabel={strings.filtersCloseLabel}
+        doneLabel={filtersDoneLabel}
       />
     </SafeAreaView>
   );
