@@ -27,6 +27,9 @@
       "query/*": [
         "./src/query/*"
       ],
+      "store/*": [
+        "./src/store/*"
+      ],
       "models/*": [
         "./src/models/*"
       ],
