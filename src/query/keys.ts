@@ -13,6 +13,10 @@ export const qk = {
     root: ['jobs'] as const,
     list: (filters: JobFilters) => ['jobs', 'list', filters] as const,
   },
+  categories: {
+    root: ['categories'] as const,
+    list: () => ['categories', 'list'] as const,
+  },
 } as const;
 
 export type QueryKeys = typeof qk;

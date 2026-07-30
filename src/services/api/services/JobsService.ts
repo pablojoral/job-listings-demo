@@ -15,6 +15,10 @@ export interface JobFilters {
   limit?: number;
 }
 
+/** The set of `job_type` values Remotive's API can return (see the API docs). */
+export const JOB_TYPES = ['full_time', 'part_time', 'contract', 'freelance', 'internship'] as const;
+export type JobType = (typeof JOB_TYPES)[number];
+
 /** A job exactly as Remotive's `GET /remote-jobs` returns it (snake_case). */
 export interface JobDto {
   id: number;
