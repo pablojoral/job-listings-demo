@@ -1,5 +1,4 @@
-import type { Job } from 'models/Job';
-import type { JobType } from 'models/Job';
+import { isJobType, type Job, type JobType } from 'models/Job';
 
 export interface JobFilterCriteria {
   search: string;
@@ -15,7 +14,7 @@ export const filterJobs = (jobs: Job[], { search, category, jobTypes }: JobFilte
     const matchesSearch =
       !query || job.title.toLowerCase().includes(query) || job.companyName.toLowerCase().includes(query);
     const matchesCategory = !category || job.category === category;
-    const matchesJobType = jobTypes.length === 0 || jobTypes.includes(job.jobType as JobType);
+    const matchesJobType = jobTypes.length === 0 || (isJobType(job.jobType) && jobTypes.includes(job.jobType));
 
     return matchesSearch && matchesCategory && matchesJobType;
   });
