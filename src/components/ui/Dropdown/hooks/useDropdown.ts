@@ -1,18 +1,51 @@
-/**
- * `Picker` requires `selectedValue` to match one of its items, so "nothing
- * selected" is modeled as a sentinel first item carrying this value — the
- * hook maps it back to `null` for the caller.
- */
-export const PLACEHOLDER_VALUE = '';
+import { useState } from 'react';
+
+import type { DropdownOption } from '../Dropdown';
 
 interface UseDropdownParams {
+  options: DropdownOption[];
+  selectedValue: string | null;
   onChange: (value: string | null) => void;
+  placeholder: string;
 }
 
-export const useDropdown = ({ onChange }: UseDropdownParams) => {
-  const handleValueChange = (value: string) => {
-    onChange(value === PLACEHOLDER_VALUE ? null : value);
+export const useDropdown = ({ options, selectedValue, onChange, placeholder }: UseDropdownParams) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const open = () => setIsOpen(true);
+  const close = () => setIsOpen(false);
+
+  const handleSelect = (value: string | null) => {
+    setIsOpen(false);
+    onChange(value);
   };
 
-  return { handleValueChange };
+  // The placeholder doubles as the "no selection" option: picking it reports
+  // `null` to `onChange`, mirroring how the trigger shows it while nothing is
+  // selected.
+  const items = [
+    {
+      key: '__placeholder__',
+      label: placeholder,
+      selected: selectedValue === null,
+      handlePress: () => handleSelect(null),
+    },
+    ...options.map((option) => ({
+      key: option.value,
+      label: option.label,
+      selected: option.value === selectedValue,
+      handlePress: () => handleSelect(option.value),
+    })),
+  ];
+
+  const selectedOption = options.find((option) => option.value === selectedValue);
+
+  return {
+    isOpen,
+    open,
+    close,
+    items,
+    triggerLabel: selectedOption?.label ?? placeholder,
+    isPlaceholder: !selectedOption,
+  };
 };

@@ -138,13 +138,12 @@ describe('JobList', () => {
       data: { jobCount: 2, totalJobCount: 2, jobs: [softwareJob, designJob] },
     });
 
-    // The dropdown's options are native picker items (not pressable text), so
-    // the category selection is driven through the picker's native event seam.
-    const { getByText, getByLabelText, getByTestId, queryByText } = await render(<JobList />);
+    // Queried by role: the card's Tag also renders the category as plain text,
+    // but only the dropdown's option row is a button named after it.
+    const { getByText, getByLabelText, getByTestId, getByRole, queryByText } = await render(<JobList />);
     await fireEvent.press(getByLabelText('Filters'));
-    await fireEvent(getByTestId('category-dropdown'), 'selectionChange', {
-      nativeEvent: { selection: 'Software Development' },
-    });
+    await fireEvent.press(getByTestId('category-dropdown'));
+    await fireEvent.press(getByRole('button', { name: 'Software Development' }));
 
     expect(getByText('Backend Engineer')).toBeTruthy();
     expect(queryByText('Product Designer')).toBeNull();

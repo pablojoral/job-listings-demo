@@ -48,16 +48,12 @@ describe('JobFilters', () => {
     expect(input.props.value).toBe('engineer');
   });
 
-  // The dropdown's option list is native (SwiftUI/Compose picker) — selection
-  // is driven through its native event seam via testID, and the observable
-  // effect at this level is the Clear-filters button becoming enabled.
   it('selects a category from the dropdown', async () => {
-    const { getByTestId, getByRole } = await render(<JobFilters />);
+    const { getByTestId, getByText, getByRole } = await render(<JobFilters />);
     expect(getByRole('button', { name: 'Clear filters', disabled: true })).toBeTruthy();
 
-    await fireEvent(getByTestId('category-dropdown'), 'selectionChange', {
-      nativeEvent: { selection: 'Software Development' },
-    });
+    await fireEvent.press(getByTestId('category-dropdown'));
+    await fireEvent.press(getByText('Software Development'));
 
     expect(getByRole('button', { name: 'Clear filters', disabled: false })).toBeTruthy();
   });
