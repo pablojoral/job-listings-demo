@@ -15,22 +15,30 @@ A remote job listings browser built with [Expo](https://expo.dev) (SDK 57) and R
 Install dependencies:
 
 ```bash
-yarn install
+npm install
 ```
 
 Build and launch on the iOS Simulator:
 
 ```bash
-yarn ios
+npx expo run:ios
 ```
 
 Build and launch on an Android emulator/device:
 
 ```bash
-yarn android
+npx expo run:android
 ```
 
-The first build compiles the native project and takes a few minutes; after that, `yarn start` launches just the Metro dev server and the installed dev build connects to it.
+The first build compiles the native project and takes a few minutes. After that, start just the Metro dev server and the installed dev build connects to it:
+
+```bash
+npx expo start
+```
+
+### Using Yarn instead
+
+The equivalent Yarn scripts also work: `yarn install`, then `yarn ios`, `yarn android`, or `yarn start`.
 
 ## Scripts
 
