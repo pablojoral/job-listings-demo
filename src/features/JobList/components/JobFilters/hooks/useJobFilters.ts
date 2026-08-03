@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import type { DropdownOption } from 'components/ui/Dropdown/Dropdown';
 import type { MultiSelectOption } from 'components/ui/MultiSelect/MultiSelect';
 import { useDebouncedCommit } from 'hooks/useDebouncedCommit';
@@ -12,6 +14,8 @@ import { useJobFiltersStore } from 'store/JobFilters/useJobFiltersStore';
  * instead of once per keystroke.
  */
 const SEARCH_DEBOUNCE_MS = 200;
+
+const JOB_TYPE_OPTIONS: MultiSelectOption[] = JOB_TYPES.map((type) => ({ value: type, label: JOB_TYPE_LABELS[type] }));
 
 export const useJobFilters = () => {
   const search = useJobFiltersStore((state) => state.search);
@@ -36,10 +40,12 @@ export const useJobFilters = () => {
     reset();
   };
 
-  const { data: categories = [] } = useCategories();
+  const { data: categories } = useCategories();
 
-  const categoryOptions: DropdownOption[] = categories.map((cat) => ({ value: cat.name, label: cat.name }));
-  const jobTypeOptions: MultiSelectOption[] = JOB_TYPES.map((type) => ({ value: type, label: JOB_TYPE_LABELS[type] }));
+  const categoryOptions: DropdownOption[] = useMemo(
+    () => (categories ?? []).map((cat) => ({ value: cat.name, label: cat.name })),
+    [categories],
+  );
 
   const hasActiveFilters = Boolean(draftSearch || category || jobTypes.length > 0);
 
@@ -50,10 +56,10 @@ export const useJobFilters = () => {
     categoryOptions,
     selectedCategory: category,
     onChangeCategory: setCategory,
-    jobTypeOptions,
+    jobTypeOptions: JOB_TYPE_OPTIONS,
     selectedJobTypes: jobTypes,
     // MultiSelect is generic over `string[]`; every value it can pass back originated
-    // from `jobTypeOptions`, which is built from `JOB_TYPES`, so this cast is safe.
+    // from `JOB_TYPE_OPTIONS`, which is built from `JOB_TYPES`, so this cast is safe.
     onChangeJobTypes: (values: string[]) => setJobTypes(values as JobType[]),
     hasActiveFilters,
     onReset,
