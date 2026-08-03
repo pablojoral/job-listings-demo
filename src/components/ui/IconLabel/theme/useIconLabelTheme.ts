@@ -1,17 +1,9 @@
-import { StyleSheet } from 'react-native';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
 
-import { useTheme } from 'theme/hooks/useTheme';
-
-export const useIconLabelTheme = () => {
-  const theme = useTheme();
-
-  const styles = StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing['spacing-xs'],
-    },
-  });
-
-  return { styles, theme };
-};
+export const useIconLabelTheme = makeThemedStyles((theme) => ({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing['spacing-xs'],
+  },
+}));

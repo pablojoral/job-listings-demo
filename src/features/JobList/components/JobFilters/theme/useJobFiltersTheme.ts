@@ -1,18 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
 
-import { useTheme } from 'theme/hooks/useTheme';
-
-export const useJobFiltersTheme = () => {
-  const theme = useTheme();
-
-  const styles = StyleSheet.create({
-    container: {
-      gap: theme.spacing['spacing-md'],
-    },
-    section: {
-      gap: theme.spacing['spacing-xs'],
-    },
-  });
-
-  return { styles, theme };
-};
+export const useJobFiltersTheme = makeThemedStyles((theme) => ({
+  container: {
+    gap: theme.spacing['spacing-md'],
+  },
+  section: {
+    gap: theme.spacing['spacing-xs'],
+  },
+}));

@@ -59,27 +59,50 @@ src/features/JobList/
     useJobListTheme.ts
 ```
 
-The hook must:
-- Call `useTheme()` internally — never accept theme as a parameter
-- Return `{ styles, theme }` — `styles` for layout/visual, `theme` for values passed as props (e.g. icon colors)
-- Use `StyleSheet.create()` for static styles
-- Use `useMemo` for styles that depend on props or state
+**The common case — styles that depend only on the theme — is defined through
+the `makeThemedStyles` factory** (`theme/makeThemedStyles.ts`), which encodes
+`useTheme()` + a `StyleSheet.create` memoized on `[theme]` once:
 
 ```ts
-import { StyleSheet } from 'react-native';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
+
+export const useJobListTheme = makeThemedStyles((theme) => ({
+  container: {
+    flex: 1,
+    backgroundColor: theme.surfaceColor['surface-background'],
+    paddingHorizontal: theme.spacing['spacing-md'],
+  },
+}));
+```
+
+**Hooks whose styles also depend on props or state are written by hand** and
+must:
+- Call `useTheme()` internally — never accept theme as a parameter
+- Return `{ styles, theme }` — `styles` for layout/visual, `theme` for values passed as props (e.g. icon colors)
+- Use `useMemo(() => StyleSheet.create({ ... }), [theme])` for the theme-only styles
+- Use `useMemo` returning a plain object for the prop/state-dependent styles
+
+```ts
 import { useMemo } from 'react';
+
+import { StyleSheet } from 'react-native';
+
 import { useTheme } from 'theme/hooks/useTheme';
 
-export const useJobListTheme = (isActive: boolean) => {
+export const useJobRowTheme = (isActive: boolean) => {
   const theme = useTheme();
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.surfaceColor['surface-background'],
-      paddingHorizontal: theme.spacing['spacing-md'],
-    },
-  });
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: theme.surfaceColor['surface-background'],
+          paddingHorizontal: theme.spacing['spacing-md'],
+        },
+      }),
+    [theme],
+  );
 
   const rowStyle = useMemo(() => ({
     opacity: isActive ? 1 : 0.5,
@@ -111,11 +134,24 @@ return (
 
 | Situation | Use |
 |---|---|
-| Static styles (no props/state dependency) | `StyleSheet.create` |
-| Style varies by prop or state | `useMemo` returning a plain object |
+| Styles that depend only on the theme | `makeThemedStyles((theme) => ({ ... }))` |
+| Style varies by prop or state | hand-written hook: `useMemo` returning a plain object |
 | Animated style | `useAnimatedStyle` from Reanimated |
 
-Do **not** call `StyleSheet.create` inside `useMemo` — `StyleSheet.create` is optimized at registration time; combining them provides no benefit.
+A bare `StyleSheet.create` in a hook body runs on **every render** — its
+registration-time optimization only exists at module level, and theme-dependent
+styles can't live there. The factory memoizes on `[theme]` internally; in
+hand-written hooks, always wrap `StyleSheet.create` in `useMemo` keyed on
+`[theme]`. `useTheme` returns a stable object, so styles rebuild only when the
+color scheme or safe-area insets change.
+
+```ts
+// BAD — re-creates and re-validates every style object on every render
+const styles = StyleSheet.create({ container: { flex: 1 } });
+
+// GOOD — built once per theme change (what makeThemedStyles does for you)
+const styles = useMemo(() => StyleSheet.create({ container: { flex: 1 } }), [theme]);
+```
 
 ---
 

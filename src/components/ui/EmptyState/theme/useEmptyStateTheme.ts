@@ -1,19 +1,11 @@
-import { StyleSheet } from 'react-native';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
 
-import { useTheme } from 'theme/hooks/useTheme';
-
-export const useEmptyStateTheme = () => {
-  const theme = useTheme();
-
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing['spacing-xl'],
-      gap: theme.spacing['spacing-sm'],
-    },
-  });
-
-  return { styles, theme };
-};
+export const useEmptyStateTheme = makeThemedStyles((theme) => ({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing['spacing-xl'],
+    gap: theme.spacing['spacing-sm'],
+  },
+}));

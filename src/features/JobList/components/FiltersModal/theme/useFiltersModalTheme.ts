@@ -1,15 +1,14 @@
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
 
-import { useTheme } from 'theme/hooks/useTheme';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
 
-export const useFiltersModalTheme = () => {
-  const theme = useTheme();
+export const useFiltersModalTheme = makeThemedStyles((theme) => {
   // Bounded so the ScrollView inside `sheet` has a fixed height to scroll
   // within — capped at the safe-area top inset (never covers the status bar
   // / notch) plus a spacing buffer, not an arbitrary percentage of the screen.
   const maxSheetHeight = Dimensions.get('window').height - theme.topInset - theme.spacing['spacing-xl'];
 
-  const styles = StyleSheet.create({
+  return {
     overlay: {
       flex: 1,
       justifyContent: 'flex-end',
@@ -47,7 +46,5 @@ export const useFiltersModalTheme = () => {
       borderTopWidth: theme.borderWidth['border-width-hairline'],
       borderTopColor: theme.borderColor['border-secondary'],
     },
-  });
-
-  return { styles, theme };
-};
+  };
+});

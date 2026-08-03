@@ -27,19 +27,23 @@ export const useIconButtonTheme = (variant: IconButtonVariant) => {
     }
   }, [theme, variant]);
 
-  const styles = StyleSheet.create({
-    badge: {
-      position: 'absolute',
-      top: -theme.spacing['spacing-xs'],
-      right: -theme.spacing['spacing-xs'],
-      minWidth: theme.spacing['spacing-md'],
-      paddingHorizontal: theme.spacing['spacing-xxs'],
-      borderRadius: theme.cornerRad['corner-rad-full'],
-      backgroundColor: theme.surfaceColor['surface-brand'],
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-  });
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        badge: {
+          position: 'absolute',
+          top: -theme.spacing['spacing-xs'],
+          right: -theme.spacing['spacing-xs'],
+          minWidth: theme.spacing['spacing-md'],
+          paddingHorizontal: theme.spacing['spacing-xxs'],
+          borderRadius: theme.cornerRad['corner-rad-full'],
+          backgroundColor: theme.surfaceColor['surface-brand'],
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      }),
+    [theme],
+  );
 
   return { containerStyle, styles, theme };
 };

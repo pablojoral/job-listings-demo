@@ -1,18 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
 
-import { useTheme } from 'theme/hooks/useTheme';
-
-export const useCompanyLogoTheme = () => {
-  const theme = useTheme();
-
-  const styles = StyleSheet.create({
-    logo: {
-      width: theme.iconSize['icon-size-xxl'],
-      height: theme.iconSize['icon-size-xxl'],
-      borderRadius: theme.cornerRad['corner-rad-sm'],
-      backgroundColor: theme.surfaceColor['surface-secondary'],
-    },
-  });
-
-  return { styles, theme };
-};
+export const useCompanyLogoTheme = makeThemedStyles((theme) => ({
+  logo: {
+    width: theme.iconSize['icon-size-xxl'],
+    height: theme.iconSize['icon-size-xxl'],
+    borderRadius: theme.cornerRad['corner-rad-sm'],
+    backgroundColor: theme.surfaceColor['surface-secondary'],
+  },
+}));

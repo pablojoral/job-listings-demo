@@ -1,17 +1,9 @@
-import { StyleSheet } from 'react-native';
+import { makeThemedStyles } from 'theme/makeThemedStyles';
 
-import { useTheme } from 'theme/hooks/useTheme';
-
-export const useMultiSelectTheme = () => {
-  const theme = useTheme();
-
-  const styles = StyleSheet.create({
-    container: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: theme.spacing['spacing-sm'],
-    },
-  });
-
-  return { styles, theme };
-};
+export const useMultiSelectTheme = makeThemedStyles((theme) => ({
+  container: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing['spacing-sm'],
+  },
+}));
