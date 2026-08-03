@@ -1,5 +1,5 @@
 import { BaseService } from '../BaseService';
-import { serializeCategory } from '../serializers/CategorySerializer';
+import type { Category } from 'models/Category';
 
 /** A category exactly as Remotive's `GET /remote-jobs/categories` returns it. */
 export interface CategoryDto {
@@ -8,12 +8,12 @@ export interface CategoryDto {
   slug: string;
 }
 
-/** A category, in the app's own shape (identical to `CategoryDto` today, kept separate in case the API diverges). */
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
+/** Maps a raw `CategoryDto` (as Remotive returns it) to the app's `Category` domain shape. */
+const serializeCategory = (dto: CategoryDto): Category => ({
+  id: dto.id,
+  name: dto.name,
+  slug: dto.slug,
+});
 
 /** The raw envelope exactly as returned by `GET /remote-jobs/categories` — reuses the jobs envelope's field names. */
 interface CategoriesResponseDto {
@@ -22,9 +22,9 @@ interface CategoriesResponseDto {
   jobs: CategoryDto[];
 }
 
-class CategoriesService extends BaseService {
+export class CategoriesService extends BaseService {
   async list(): Promise<Category[]> {
-    const res = await this.apiClient.get<CategoriesResponseDto>('/categories');
+    const res = await this.apiClient.get<CategoriesResponseDto>('/remote-jobs/categories');
     return res.data.jobs.map(serializeCategory);
   }
 }

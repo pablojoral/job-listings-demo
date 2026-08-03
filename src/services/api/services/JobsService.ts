@@ -1,7 +1,5 @@
 import { BaseService } from '../BaseService';
-import type { Job } from 'models/models';
-
-import { serializeJob } from '../serializers/JobSerializer';
+import type { Job } from 'models/Job';
 
 /**
  * Query params Remotive's `GET /remote-jobs` accepts. Field names match the
@@ -14,10 +12,6 @@ export interface JobFilters {
   company_name?: string;
   limit?: number;
 }
-
-/** The set of `job_type` values Remotive's API can return (see the API docs). */
-export const JOB_TYPES = ['full_time', 'part_time', 'contract', 'freelance', 'internship'] as const;
-export type JobType = (typeof JOB_TYPES)[number];
 
 /** A job exactly as Remotive's `GET /remote-jobs` returns it (snake_case). */
 export interface JobDto {
@@ -40,6 +34,23 @@ export interface JobDto {
   description: string;
 }
 
+/** Maps a raw `JobDto` (snake_case, as Remotive returns it) to the app's camelCase `Job`. */
+const serializeJob = (dto: JobDto): Job => ({
+  id: dto.id,
+  url: dto.url,
+  title: dto.title,
+  companyName: dto.company_name,
+  companyLogo: dto.company_logo,
+  companyLogoUrl: dto.company_logo_url,
+  category: dto.category,
+  tags: dto.tags,
+  jobType: dto.job_type,
+  publicationDate: dto.publication_date,
+  candidateRequiredLocation: dto.candidate_required_location,
+  salary: dto.salary,
+  description: dto.description,
+});
+
 /** The raw envelope exactly as returned by `GET /remote-jobs`. */
 interface JobsResponseDto {
   'job-count': number;
@@ -56,7 +67,7 @@ export interface JobsPage {
 
 class JobsService extends BaseService {
   async list(filters: JobFilters = {}): Promise<JobsPage> {
-    const res = await this.apiClient.get<JobsResponseDto>('', { params: filters });
+    const res = await this.apiClient.get<JobsResponseDto>('/remote-jobs', { params: filters });
     return {
       jobCount: res.data['job-count'],
       totalJobCount: res.data['total-job-count'],

@@ -192,20 +192,37 @@ Use a more specific key only when a root invalidation would be unnecessarily exp
 
 ---
 
-## 7. Response and request types are co-located in the service file
+## 7. Domain types live in `models/`; wire types live in the service file
 
-Types that describe the API contract belong in the service file, not in `models/`. Only domain model types that are shared across multiple services belong in `src/models/models.ts`.
+Split by what a type *means*, not by how many places use it:
+
+- **`src/models/`** — domain models and the types that belong to them: the app-facing shape
+  of an entity plus its related enums, unions, and derived constants (e.g. `Job`, `JOB_TYPES`,
+  `JobType`, and `JOB_TYPE_LABELS` in `src/models/Job.ts`; `Category` in
+  `src/models/Category.ts`). One file per model, named after it. A domain type qualifies even
+  if only one service produces it today — domain vocabulary is app-wide by nature.
+- **Service file** — types that describe the wire contract with the API: raw DTOs
+  (snake_case response shapes), response envelopes, and request/query params whose field
+  names match the API (e.g. `JobDto`, `JobsResponseDto`, `JobsPage`, `JobFilters`,
+  `CategoryDto`). The serializer mapping DTO → domain model also lives here, file-private.
+
+Not domain models (stay where they are): store state interfaces (`store/`), feature-local
+derivation types (e.g. `JobFilterCriteria` in the feature's `utils/`), and UI component prop
+types (`DropdownOption`).
 
 ```ts
-// services/api/services/JobsService.ts
-
-// These types describe the API shape — they live here
-export interface Job { ... }
-export interface JobsPage { ... }
-export interface JobFilters { ... }
+// services/api/services/JobsService.ts — wire contract only
+export interface JobDto { ... }      // raw response shape (snake_case)
+export interface JobsPage { ... }    // serialized envelope the service returns
+export interface JobFilters { ... }  // query params, named as the API expects
 
 class JobsService extends BaseService { ... }
 export const jobsService = new JobsService();
+
+// src/models/Job.ts — domain vocabulary
+export interface Job { ... }
+export const JOB_TYPES = [...] as const;
+export type JobType = (typeof JOB_TYPES)[number];
 ```
 
 The query hook then re-exports or imports these types directly from the service:

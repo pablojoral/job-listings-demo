@@ -1,12 +1,11 @@
-jest.mock('services/api/apiClient', () => ({ apiClient: { get: jest.fn() } }));
+import type { AxiosInstance } from 'axios';
 
-import { apiClient } from 'services/api/apiClient';
+import { CategoriesService } from './CategoriesService';
 
-import { categoriesService } from './CategoriesService';
+const mockGet = jest.fn();
+const fakeApiClient = { get: mockGet } as unknown as AxiosInstance;
 
-const mockGet = apiClient.get as jest.Mock;
-
-describe('categoriesService', () => {
+describe('CategoriesService', () => {
   it('maps the raw envelope to a list of categories', async () => {
     mockGet.mockResolvedValue({
       data: {
@@ -19,9 +18,9 @@ describe('categoriesService', () => {
       },
     });
 
-    const categories = await categoriesService.list();
+    const categories = await new CategoriesService(fakeApiClient).list();
 
-    expect(mockGet).toHaveBeenCalledWith('/categories');
+    expect(mockGet).toHaveBeenCalledWith('/remote-jobs/categories');
     expect(categories).toEqual([
       { id: 19, name: 'Software Development', slug: 'software-dev' },
       { id: 21, name: 'Design', slug: 'design' },
