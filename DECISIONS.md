@@ -76,3 +76,27 @@ or toast — Expo has no universal one) with a manual retry.
 
 **Revisit if:** categories become load-bearing, or users would mistake a
 failed fetch for "there are no categories".
+
+---
+
+## 2026-08-03 — Favorites persist ids only, no job snapshots
+
+**Decision:** `useFavoritesStore` persists nothing but the favorited job ids.
+No snapshot of the job (title, company, etc.) is stored alongside them — the
+favorites list resolves each id against the freshly fetched jobs list, and a
+favorite whose listing has expired off Remotive simply stops rendering.
+
+**Context:** Offline support is not a goal for this demo, so persisted
+snapshots would add data without a use case — and with a cost: a snapshot is a
+second copy of the job that can go stale, so every read would need
+reconciliation between the persisted copy and the fresh API data (which one to
+show, when to update the snapshot, how to mark expired listings). Ids alone
+have no synchronization problem — the API response is always the single source
+of truth for job content.
+
+The known improvement, deliberately skipped: persist a minimal snapshot
+(`{ id, title, companyName }`) so expired favorites can render in a degraded
+"no longer available" state instead of silently disappearing.
+
+**Revisit if:** offline viewing of favorites becomes a requirement, or users
+notice favorites vanishing when listings expire and mistake it for data loss.
