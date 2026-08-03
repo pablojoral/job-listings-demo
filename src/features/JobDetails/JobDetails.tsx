@@ -45,6 +45,7 @@ export const JobDetails = () => {
 
         <IconLabel icon="building" label={job.companyName} />
         <IconLabel icon="map-pin" label={job.candidateRequiredLocation} />
+        {job.salary ? <IconLabel icon="dollar-sign" label={job.salary} /> : null}
 
         {postedDate ? (
           <Text color="font-secondary" size="font-size-xs">

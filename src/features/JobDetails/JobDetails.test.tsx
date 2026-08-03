@@ -64,6 +64,22 @@ describe('JobDetails', () => {
     expect(getByText('Build APIs')).toBeTruthy();
   });
 
+  it('shows the salary range when the listing provides one', async () => {
+    const job = makeJob({ id: 7, salary: '$100k - $130k' });
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
+
+    const { getByText } = await render(<JobDetails />);
+    expect(getByText('$100k - $130k')).toBeTruthy();
+  });
+
+  it('omits the salary row when the listing has no salary', async () => {
+    const job = makeJob({ id: 7, salary: '' });
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
+
+    const { queryByText } = await render(<JobDetails />);
+    expect(queryByText(/\$/)).toBeNull();
+  });
+
   it('toggles the job as favorite from the save button', async () => {
     const job = makeJob({ id: 7 });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
