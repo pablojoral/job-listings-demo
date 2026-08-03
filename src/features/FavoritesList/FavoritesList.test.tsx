@@ -56,6 +56,18 @@ describe('FavoritesList', () => {
     expect(getByText('Expired Engineer')).toBeTruthy();
   });
 
+  it('removes a job from the list when its heart is tapped', async () => {
+    const favorite = makeJob({ id: 1, title: 'Favorited Engineer' });
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [favorite] } });
+    await act(() => useFavoritesStore.getState().toggleFavorite(favorite));
+
+    const { getByLabelText, getByText, queryByText } = await render(<FavoritesList />);
+    await fireEvent.press(getByLabelText('Remove from favorites'));
+
+    expect(queryByText('Favorited Engineer')).toBeNull();
+    expect(getByText('No favorites yet')).toBeTruthy();
+  });
+
   it('navigates to the listing details when a card is pressed', async () => {
     const favorite = makeJob({ id: 1, title: 'Favorited Engineer' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [favorite] } });

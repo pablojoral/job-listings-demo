@@ -37,7 +37,7 @@ export const FavoritesList = () => {
           <EmptyState
             icon="heart"
             title="No favorites yet"
-            message="Save a job from its details screen and it will show up here."
+            message="Tap the heart on a job to save it here."
           />
         }
       />

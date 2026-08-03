@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Icon } from 'components/ui/Icon/Icon';
+import { IconButton } from 'components/ui/IconButton/IconButton';
 import { IconLabel } from 'components/ui/IconLabel/IconLabel';
 import { JobHeader } from 'components/domain/JobHeader/JobHeader';
 import { Tag } from 'components/ui/Tag/Tag';
@@ -23,7 +23,7 @@ interface JobCardProps {
  * changes).
  */
 export const JobCard = memo(({ job, onPress }: JobCardProps) => {
-  const { postedDate, jobTypeLabel, isFavorite } = useJobCard(job);
+  const { postedDate, jobTypeLabel, isFavorite, handleToggleFavorite } = useJobCard(job);
   const { styles } = useJobCardTheme();
 
   return (
@@ -38,9 +38,15 @@ export const JobCard = memo(({ job, onPress }: JobCardProps) => {
         <View style={styles.headerFlex}>
           <JobHeader logoUrl={job.companyLogoUrl || job.companyLogo} title={job.title} />
         </View>
-        {isFavorite ? (
-          <Icon name="heart" size="icon-size-sm" color="font-brand" filled testID="favorite-indicator" />
-        ) : null}
+        <IconButton
+          icon="heart"
+          variant="plain"
+          filled={isFavorite}
+          color={isFavorite ? 'font-brand' : 'font-secondary'}
+          accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Save to favorites'}
+          onPress={handleToggleFavorite}
+          testID="favorite-toggle"
+        />
       </View>
 
       <IconLabel icon="building" label={job.companyName} />
@@ -59,3 +65,5 @@ export const JobCard = memo(({ job, onPress }: JobCardProps) => {
     </Pressable>
   );
 });
+
+JobCard.displayName = 'JobCard';

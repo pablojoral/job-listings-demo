@@ -8,10 +8,16 @@ export const useJobCard = (job: Job) => {
   // own boolean flips (Object.is), so a favorite toggle never touches the
   // list or the other memoized cards.
   const isFavorite = useFavoritesStore((state) => state.favoriteIds.includes(job.id));
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
+  const handleToggleFavorite = () => {
+    toggleFavorite(job);
+  };
 
   return {
     postedDate: formatPostedDate(job.publicationDate),
     jobTypeLabel: formatJobType(job.jobType),
     isFavorite,
+    handleToggleFavorite,
   };
 };

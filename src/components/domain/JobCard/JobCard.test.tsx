@@ -51,19 +51,37 @@ describe('JobCard', () => {
     expect(queryByTestId('company-logo')).toBeNull();
   });
 
-  it('shows no favorite indicator by default', async () => {
-    const job = makeJob();
-    const { queryByTestId } = await render(<JobCard job={job} />);
-    expect(queryByTestId('favorite-indicator')).toBeNull();
+  it('offers to save an unfavorited job from the heart', async () => {
+    const job = makeJob({ id: 7 });
+    const { getByLabelText, queryByLabelText } = await render(<JobCard job={job} />);
+    expect(getByLabelText('Save to favorites')).toBeTruthy();
+    expect(queryByLabelText('Remove from favorites')).toBeNull();
+
+    await fireEvent.press(getByLabelText('Save to favorites'));
+
+    expect(getByLabelText('Remove from favorites')).toBeTruthy();
+    expect(useFavoritesStore.getState().favoriteIds).toContain(7);
   });
 
-  it('shows the favorite indicator when the job is favorited', async () => {
+  it('removes a favorited job from the heart', async () => {
     const job = makeJob({ id: 7 });
-    const { getByTestId } = await render(<JobCard job={job} />);
-
     await act(() => useFavoritesStore.getState().toggleFavorite(job));
 
-    expect(getByTestId('favorite-indicator')).toBeTruthy();
+    const { getByLabelText } = await render(<JobCard job={job} />);
+    await fireEvent.press(getByLabelText('Remove from favorites'));
+
+    expect(getByLabelText('Save to favorites')).toBeTruthy();
+    expect(useFavoritesStore.getState().favoriteIds).not.toContain(7);
+  });
+
+  it('does not trigger the card press when the heart is tapped', async () => {
+    const onPress = jest.fn();
+    const job = makeJob();
+    const { getByLabelText } = await render(<JobCard job={job} onPress={onPress} />);
+
+    await fireEvent.press(getByLabelText('Save to favorites'));
+
+    expect(onPress).not.toHaveBeenCalled();
   });
 
   it('calls onPress when the card is pressed', async () => {

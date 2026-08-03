@@ -1,18 +1,33 @@
-import { StyleSheet } from 'react-native';
+import { useMemo } from 'react';
+import { StyleSheet, type ViewStyle } from 'react-native';
 
 import { useTheme } from 'theme/hooks/useTheme';
 
-export const useIconButtonTheme = () => {
+export type IconButtonVariant = 'outlined' | 'plain';
+
+export const useIconButtonTheme = (variant: IconButtonVariant) => {
   const theme = useTheme();
 
-  const styles = StyleSheet.create({
-    container: {
+  const containerStyle = useMemo<ViewStyle>(() => {
+    const base: ViewStyle = {
       padding: theme.spacing['spacing-sm'],
       borderRadius: theme.cornerRad['corner-rad-md'],
-      borderWidth: theme.borderWidth['border-width-hairline'],
-      borderColor: theme.borderColor['border-primary'],
-      backgroundColor: theme.surfaceColor['surface-primary'],
-    },
+    };
+
+    switch (variant) {
+      case 'outlined':
+        return {
+          ...base,
+          borderWidth: theme.borderWidth['border-width-hairline'],
+          borderColor: theme.borderColor['border-primary'],
+          backgroundColor: theme.surfaceColor['surface-primary'],
+        };
+      case 'plain':
+        return base;
+    }
+  }, [theme, variant]);
+
+  const styles = StyleSheet.create({
     badge: {
       position: 'absolute',
       top: -theme.spacing['spacing-xs'],
@@ -26,5 +41,5 @@ export const useIconButtonTheme = () => {
     },
   });
 
-  return { styles, theme };
+  return { containerStyle, styles, theme };
 };
