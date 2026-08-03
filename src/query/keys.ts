@@ -1,5 +1,3 @@
-import type { JobFilters } from 'services/api/services/JobsService';
-
 /**
  * Query key registry.
  *
@@ -11,7 +9,7 @@ import type { JobFilters } from 'services/api/services/JobsService';
 export const qk = {
   jobs: {
     root: ['jobs'] as const,
-    list: (filters: JobFilters) => ['jobs', 'list', filters] as const,
+    list: () => ['jobs', 'list'] as const,
   },
   categories: {
     root: ['categories'] as const,

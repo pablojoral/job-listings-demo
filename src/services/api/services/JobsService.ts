@@ -1,18 +1,6 @@
 import { BaseService } from '../BaseService';
 import type { Job } from 'models/Job';
 
-/**
- * Query params Remotive's `GET /remote-jobs` accepts. Field names match the
- * API's own query string keys exactly (see
- * https://github.com/remotive-com/remote-jobs-api) — no camelCase transform.
- */
-export interface JobFilters {
-  search?: string;
-  category?: string;
-  company_name?: string;
-  limit?: number;
-}
-
 /** A job exactly as Remotive's `GET /remote-jobs` returns it (snake_case). */
 export interface JobDto {
   id: number;
@@ -66,8 +54,14 @@ export interface JobsPage {
 }
 
 class JobsService extends BaseService {
-  async list(filters: JobFilters = {}): Promise<JobsPage> {
-    const res = await this.apiClient.get<JobsResponseDto>('/remote-jobs', { params: filters });
+  /**
+   * Fetches the full jobs list, unfiltered. Remotive accepts `search`/
+   * `category` query params, but the app deliberately doesn't use them: it
+   * fetches everything once and filters client-side, so favorites and details
+   * can resolve any job against the single cached list.
+   */
+  async list(): Promise<JobsPage> {
+    const res = await this.apiClient.get<JobsResponseDto>('/remote-jobs');
     return {
       jobCount: res.data['job-count'],
       totalJobCount: res.data['total-job-count'],

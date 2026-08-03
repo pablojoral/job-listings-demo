@@ -23,11 +23,4 @@ describe('useJobs', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(page);
   });
-
-  it('passes filters through to the service', async () => {
-    mockList.mockResolvedValue({ jobCount: 0, totalJobCount: 0, jobs: [] });
-
-    await renderHookWithQuery(() => useJobs({ search: 'engineer' }));
-    await waitFor(() => expect(mockList).toHaveBeenCalledWith({ search: 'engineer' }));
-  });
 });
