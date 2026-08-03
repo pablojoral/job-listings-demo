@@ -1,5 +1,5 @@
-import type { Job } from 'models/models';
-import type { JobType } from 'services/api/services/JobsService';
+import type { Job } from 'models/Job';
+import type { JobType } from 'models/Job';
 
 export interface JobFilterCriteria {
   search: string;

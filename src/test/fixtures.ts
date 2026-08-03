@@ -1,4 +1,4 @@
-import type { Job } from 'models/models';
+import type { Job } from 'models/Job';
 
 let jobCounter = 0;
 

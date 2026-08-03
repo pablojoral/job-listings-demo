@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { JobType } from 'services/api/services/JobsService';
+import type { JobType } from 'models/Job';
 
 export interface JobFiltersState {
   search: string;
