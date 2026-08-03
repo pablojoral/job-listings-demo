@@ -1,3 +1,6 @@
+import { Share } from 'react-native';
+
+import * as Linking from 'expo-linking';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
@@ -30,6 +33,12 @@ export const useJobDetailsScreen = () => {
     if (job) WebBrowser.openBrowserAsync(job.url);
   };
 
+  const handleShare = () => {
+    if (job) {
+      Share.share({ message: `${job.title} at ${job.companyName}\n${Linking.createURL(`/jobs/${job.id}`)}` });
+    }
+  };
+
   return {
     job,
     // A snapshot renders immediately — only block on the query while there is
@@ -41,5 +50,6 @@ export const useJobDetailsScreen = () => {
     jobTypeLabel: job ? formatJobType(job.jobType) : '',
     handleToggleFavorite,
     handleOpenListing,
+    handleShare,
   };
 };

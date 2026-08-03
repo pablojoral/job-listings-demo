@@ -14,8 +14,17 @@ import { useJobDetailsScreen } from './hooks/useJobDetailsScreen';
 import { useJobDetailsTheme } from './theme/useJobDetailsTheme';
 
 export const JobDetails = () => {
-  const { job, isLoading, isFavorite, description, postedDate, jobTypeLabel, handleToggleFavorite, handleOpenListing } =
-    useJobDetailsScreen();
+  const {
+    job,
+    isLoading,
+    isFavorite,
+    description,
+    postedDate,
+    jobTypeLabel,
+    handleToggleFavorite,
+    handleOpenListing,
+    handleShare,
+  } = useJobDetailsScreen();
   const { styles } = useJobDetailsTheme();
 
   if (isLoading) {
@@ -66,6 +75,7 @@ export const JobDetails = () => {
             variant={isFavorite ? 'primary' : 'secondary'}
             onPress={handleToggleFavorite}
           />
+          <Button label="Share" icon="share" variant="secondary" onPress={handleShare} />
         </View>
 
         {description ? (

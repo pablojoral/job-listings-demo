@@ -1,4 +1,5 @@
 import React from 'react';
+import { Share } from 'react-native';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { makeJob } from 'test/fixtures';
@@ -6,9 +7,11 @@ import { makeJob } from 'test/fixtures';
 import { useFavoritesStore } from 'store/Favorites/useFavoritesStore';
 
 jest.mock('query/Jobs/useJobs', () => ({ useJobs: jest.fn() }));
+jest.mock('expo-linking', () => ({ createURL: jest.fn(() => 'joblistingsdemo://jobs/7') }));
 jest.mock('expo-router', () => ({ useLocalSearchParams: jest.fn() }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 
+import * as Linking from 'expo-linking';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useJobs } from 'query/Jobs/useJobs';
@@ -19,12 +22,15 @@ const mockUseJobs = useJobs as jest.Mock;
 const mockUseLocalSearchParams = useLocalSearchParams as jest.Mock;
 const mockOpenBrowser = WebBrowser.openBrowserAsync as jest.Mock;
 
+const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.dismissedAction });
+
 const baseResult = { data: undefined, isLoading: false };
 
 describe('JobDetails', () => {
   beforeEach(async () => {
     await act(() => useFavoritesStore.getState().reset());
     mockUseLocalSearchParams.mockReturnValue({ id: '7' });
+    shareSpy.mockClear();
   });
 
   it('shows a loading indicator while the jobs query is loading', async () => {
@@ -100,5 +106,18 @@ describe('JobDetails', () => {
     const { getByText } = await render(<JobDetails />);
     await fireEvent.press(getByText('Apply on Remotive'));
     expect(mockOpenBrowser).toHaveBeenCalledWith('https://remotive.com/remote-jobs/job-7');
+  });
+
+  it('shares the job with a deep link via the native share sheet', async () => {
+    const job = makeJob({ id: 7, title: 'Senior Backend Engineer', companyName: 'Acme' });
+    mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
+
+    const { getByText } = await render(<JobDetails />);
+    await fireEvent.press(getByText('Share'));
+
+    expect(Linking.createURL).toHaveBeenCalledWith('/jobs/7');
+    expect(shareSpy).toHaveBeenCalledWith({
+      message: 'Senior Backend Engineer at Acme\njoblistingsdemo://jobs/7',
+    });
   });
 });

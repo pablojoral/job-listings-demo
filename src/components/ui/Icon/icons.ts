@@ -14,7 +14,8 @@ export type IconName =
   | 'building'
   | 'briefcase'
   | 'heart'
-  | 'dollar-sign';
+  | 'dollar-sign'
+  | 'share';
 
 export type IconShape =
   | { type: 'line'; x1: number; y1: number; x2: number; y2: number }
@@ -64,5 +65,12 @@ export const icons: Record<IconName, IconShape[]> = {
   'dollar-sign': [
     { type: 'line', x1: 12, y1: 1, x2: 12, y2: 23 },
     { type: 'path', d: 'M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
+  ],
+  share: [
+    { type: 'circle', cx: 18, cy: 5, r: 3 },
+    { type: 'circle', cx: 6, cy: 12, r: 3 },
+    { type: 'circle', cx: 18, cy: 19, r: 3 },
+    { type: 'line', x1: 8.59, y1: 13.51, x2: 15.42, y2: 17.49 },
+    { type: 'line', x1: 15.41, y1: 6.51, x2: 8.59, y2: 10.49 },
   ],
 };
