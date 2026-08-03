@@ -16,6 +16,6 @@ export function useJobs() {
   return useQuery({
     queryKey: qk.jobs.list(),
     queryFn: () => jobsService.list(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 60 * 1000, // 1 hour
   });
 }
