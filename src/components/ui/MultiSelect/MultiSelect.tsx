@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View } from 'react-native';
 
 import { Chip } from 'components/ui/Chip/Chip';
@@ -17,8 +17,15 @@ interface MultiSelectProps {
   onChange: (values: string[]) => void;
 }
 
-/** The app's multi-select. Renders each option as an independently toggleable tag chip. */
-export const MultiSelect = ({ options, selectedValues, onChange }: MultiSelectProps) => {
+/**
+ * The app's multi-select. Renders each option as an independently toggleable
+ * tag chip.
+ *
+ * Memoized: skips re-rendering the whole chip row when a parent re-renders
+ * without touching the selection — e.g. a sibling search input echoing each
+ * keystroke. Only holds if `options` and `onChange` are referentially stable.
+ */
+export const MultiSelect = memo(({ options, selectedValues, onChange }: MultiSelectProps) => {
   const { items } = useMultiSelect({ options, selectedValues, onChange });
   const { styles } = useMultiSelectTheme();
 
@@ -29,4 +36,6 @@ export const MultiSelect = ({ options, selectedValues, onChange }: MultiSelectPr
       ))}
     </View>
   );
-};
+});
+
+MultiSelect.displayName = 'MultiSelect';

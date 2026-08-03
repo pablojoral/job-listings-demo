@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { Host, Picker } from '@expo/ui';
 
 import { PLACEHOLDER_VALUE, useDropdown } from './hooks/useDropdown';
@@ -21,8 +23,13 @@ interface DropdownProps {
  * `@expo/ui` (`menu` appearance — a compact button opening a native popup).
  * The placeholder doubles as the "no selection" option: choosing it reports
  * `null` to `onChange`.
+ *
+ * Memoized: rebuilding the native `Host`/`Picker` subtree (one item per
+ * option) is disproportionately expensive for a re-render where nothing
+ * changed — e.g. a sibling search input echoing each keystroke. Only holds if
+ * `options` and `onChange` are referentially stable.
  */
-export const Dropdown = ({ options, selectedValue, onChange, placeholder, testID }: DropdownProps) => {
+export const Dropdown = memo(({ options, selectedValue, onChange, placeholder, testID }: DropdownProps) => {
   const { handleValueChange } = useDropdown({ onChange });
   const { theme } = useDropdownTheme();
 
@@ -36,4 +43,6 @@ export const Dropdown = ({ options, selectedValue, onChange, placeholder, testID
       </Picker>
     </Host>
   );
-};
+});
+
+Dropdown.displayName = 'Dropdown';

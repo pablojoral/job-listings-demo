@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { DropdownOption } from 'components/ui/Dropdown/Dropdown';
 import type { MultiSelectOption } from 'components/ui/MultiSelect/MultiSelect';
 import { useDebouncedCommit } from 'hooks/useDebouncedCommit';
-import { useCategories } from 'query/Categories/useCategories';
 import { JOB_TYPE_LABELS, JOB_TYPES, type JobType } from 'models/Job';
+import { useCategories } from 'query/Categories/useCategories';
 import { useJobFiltersStore } from 'store/JobFilters/useJobFiltersStore';
 
 /**
@@ -17,6 +17,13 @@ const SEARCH_DEBOUNCE_MS = 200;
 
 const JOB_TYPE_OPTIONS: MultiSelectOption[] = JOB_TYPES.map((type) => ({ value: type, label: JOB_TYPE_LABELS[type] }));
 
+/**
+ * Every control commits straight to the filters store (search debounced) —
+ * there is no submit step, because filtering is client-side and instant. In a
+ * real app with server-side filtering this form should be built on
+ * react-hook-form instead: local draft state, validation, and one explicit
+ * submit per request rather than a store write per control change.
+ */
 export const useJobFilters = () => {
   const search = useJobFiltersStore((state) => state.search);
   const category = useJobFiltersStore((state) => state.category);
@@ -47,6 +54,12 @@ export const useJobFilters = () => {
     [categories],
   );
 
+  // Stable so the memoized MultiSelect bails out while the search draft
+  // re-renders this hook's subtree on every keystroke. MultiSelect is generic
+  // over `string[]`; every value it can pass back originated from
+  // `JOB_TYPE_OPTIONS`, which is built from `JOB_TYPES`, so the cast is safe.
+  const onChangeJobTypes = useCallback((values: string[]) => setJobTypes(values as JobType[]), [setJobTypes]);
+
   const hasActiveFilters = Boolean(draftSearch || category || jobTypes.length > 0);
 
   return {
@@ -58,9 +71,7 @@ export const useJobFilters = () => {
     onChangeCategory: setCategory,
     jobTypeOptions: JOB_TYPE_OPTIONS,
     selectedJobTypes: jobTypes,
-    // MultiSelect is generic over `string[]`; every value it can pass back originated
-    // from `JOB_TYPE_OPTIONS`, which is built from `JOB_TYPES`, so this cast is safe.
-    onChangeJobTypes: (values: string[]) => setJobTypes(values as JobType[]),
+    onChangeJobTypes,
     hasActiveFilters,
     onReset,
   };
