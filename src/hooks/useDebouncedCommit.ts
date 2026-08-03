@@ -23,9 +23,14 @@ export const useDebouncedCommit = <T>(value: T, commit: (value: T) => void, dela
   const pendingCommit = useRef<PendingCommit<T> | null>(null);
 
   // Callers may pass an unstable `commit`; the ref keeps the scheduled and
-  // unmount paths on the latest one without re-arming effects.
+  // unmount paths on the latest one without re-arming them. Updated in an
+  // effect (not during render, which the react-hooks rule forbids) — timers
+  // and handlers only fire after effects have run, so they never see a stale
+  // value.
   const commitRef = useRef(commit);
-  commitRef.current = commit;
+  useEffect(() => {
+    commitRef.current = commit;
+  });
 
   const discardPending = () => {
     if (pendingCommit.current) {
