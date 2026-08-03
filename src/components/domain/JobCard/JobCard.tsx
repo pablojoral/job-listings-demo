@@ -13,24 +13,26 @@ import { useJobCardTheme } from './theme/useJobCardTheme';
 
 interface JobCardProps {
   job: Job;
-  onPress?: () => void;
+  /** Receives the pressed card's job, so callers can share one stable handler across all rows. */
+  onPress?: (job: Job) => void;
 }
 
 /**
  * Memoized: rendered per FlatList row, and `job` objects keep stable
  * references from the query cache, so shallow prop comparison skips
  * re-rendering untouched rows when the list re-renders (e.g. on filter
- * changes).
+ * changes). Only holds if `onPress` is referentially stable — pass one
+ * `useCallback` handler taking the job, never a per-row closure.
  */
 export const JobCard = memo(({ job, onPress }: JobCardProps) => {
-  const { postedDate, jobTypeLabel, isFavorite, handleToggleFavorite } = useJobCard(job);
+  const { postedDate, jobTypeLabel, isFavorite, handleToggleFavorite, handlePress } = useJobCard(job, onPress);
   const { styles } = useJobCardTheme();
 
   return (
     <Pressable
       style={styles.container}
-      onPress={onPress}
-      disabled={!onPress}
+      onPress={handlePress}
+      disabled={!handlePress}
       accessibilityRole="button"
       accessibilityLabel={job.title}
     >

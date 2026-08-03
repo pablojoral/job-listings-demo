@@ -3,7 +3,7 @@ import { useFavoritesStore } from 'store/Favorites/useFavoritesStore';
 import { formatJobType } from 'utils/formatJobType';
 import { formatPostedDate } from 'utils/formatPostedDate';
 
-export const useJobCard = (job: Job) => {
+export const useJobCard = (job: Job, onPress?: (job: Job) => void) => {
   // Primitive-returning selector: zustand re-renders this card only when its
   // own boolean flips (Object.is), so a favorite toggle never touches the
   // list or the other memoized cards.
@@ -14,10 +14,13 @@ export const useJobCard = (job: Job) => {
     toggleFavorite(job);
   };
 
+  const handlePress = onPress ? () => onPress(job) : undefined;
+
   return {
     postedDate: formatPostedDate(job.publicationDate),
     jobTypeLabel: formatJobType(job.jobType),
     isFavorite,
     handleToggleFavorite,
+    handlePress,
   };
 };

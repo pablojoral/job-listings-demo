@@ -54,9 +54,12 @@ export const useJobListScreen = () => {
           : 'Check back soon for new remote opportunities.',
       };
 
+  // One stable handler for every row: a per-row closure here would defeat
+  // JobCard's memo (see its doc comment).
+  const handlePressJob = useCallback((job: Job) => router.push(`/jobs/${job.id}`), [router]);
   const renderItem = useCallback(
-    ({ item }: { item: Job }) => <JobCard job={item} onPress={() => router.push(`/jobs/${item.id}`)} />,
-    [router],
+    ({ item }: { item: Job }) => <JobCard job={item} onPress={handlePressJob} />,
+    [handlePressJob],
   );
   const keyExtractor = useCallback((item: Job) => String(item.id), []);
 

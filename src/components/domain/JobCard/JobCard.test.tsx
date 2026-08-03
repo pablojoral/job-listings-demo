@@ -84,12 +84,13 @@ describe('JobCard', () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
-  it('calls onPress when the card is pressed', async () => {
+  it('calls onPress with the job when the card is pressed', async () => {
     const onPress = jest.fn();
     const job = makeJob({ title: 'Senior Backend Engineer' });
     const { getByText } = await render(<JobCard job={job} onPress={onPress} />);
     await fireEvent.press(getByText('Senior Backend Engineer'));
     expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onPress).toHaveBeenCalledWith(job);
   });
 
   it('shows the publication date as a relative label', async () => {
