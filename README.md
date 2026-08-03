@@ -1,56 +1,60 @@
-# Welcome to your Expo app 👋
+# Job Listings Demo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A remote job listings browser built with [Expo](https://expo.dev) (SDK 57) and React Native. It fetches jobs from the public [Remotive API](https://github.com/remotive-com/remote-jobs-api), with client-side search and filtering, favorites persisted on-device, and a native HTML job description renderer. No API keys or backend setup required.
 
-## Get started
+## Requirements
 
-1. Install dependencies
+- Node.js 20+
+- **iOS:** Xcode 16+ with an iOS Simulator (macOS only)
+- **Android:** Android Studio with an emulator (or a device with USB debugging)
 
-   ```bash
-   npm install
-   ```
+> **Note:** the app uses native modules (`@expo/ui`, `expo-sqlite`), so it does **not** run in Expo Go — it must be built natively with the commands below. The native `ios/` and `android/` projects are already checked in.
 
-2. Start the app
+## Run it
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Install dependencies:
 
 ```bash
-npm run reset-project
+yarn install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Build and launch on the iOS Simulator:
 
-### Other setup steps
+```bash
+yarn ios
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Build and launch on an Android emulator/device:
 
-## Learn more
+```bash
+yarn android
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+The first build compiles the native project and takes a few minutes; after that, `yarn start` launches just the Metro dev server and the installed dev build connects to it.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Scripts
 
-## Join the community
+| Command | What it does |
+| --- | --- |
+| `yarn ios` | Build the native iOS app and run it on the simulator |
+| `yarn android` | Build the native Android app and run it on an emulator/device |
+| `yarn start` | Start the Metro dev server (for an already-installed build) |
+| `yarn test` | Run the Jest test suite |
+| `yarn lint` | Lint with ESLint (`expo lint`) |
+| `npx tsc --noEmit` | Type-check the project |
 
-Join our community of developers creating universal apps.
+## Project structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+src/
+  app/         Expo Router routes (tabs + job details)
+  features/    Screen-level features (JobList, JobDetails, FavoritesList)
+  components/  Shared components: ui/ (design system) and domain/ (job-aware)
+  query/       TanStack Query hooks and query-key registry
+  services/    Axios client + API service classes
+  store/       Zustand stores (filters, persisted favorites)
+  models/      Domain models
+  theme/       Design tokens and theme hooks
+```
+
+Architectural conventions live in `.claude/rules/` and notable trade-offs are recorded in `DECISIONS.md`.
