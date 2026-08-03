@@ -9,5 +9,6 @@ export function useCategories() {
     queryKey: qk.categories.list(),
     queryFn: () => categoriesService.list(),
     staleTime: 30 * 60 * 1000,
+    retry: 4,
   });
 }

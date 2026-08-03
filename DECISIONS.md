@@ -58,3 +58,21 @@ is accepted.
 
 **Revisit if:** the backend gains real pagination/filtering or a detail
 endpoint, or the payload grows enough to hurt launch time on real devices.
+
+---
+
+## 2026-08-03 — A categories fetch failure degrades silently
+
+**Decision:** If the categories query errors out, the dropdown just renders
+with no options — no error message or retry button. To compensate,
+`useCategories` retries harder than the global default (`retry: 4`,
+exponential backoff), and an errored query refetches each time the filters
+sheet mounts it again.
+
+**Context:** Categories power a secondary filter and the app is fully usable
+without them, so a dedicated error UI isn't worth the surface area in a demo.
+The known improvement, deliberately skipped: surface the error (inline state
+or toast — Expo has no universal one) with a manual retry.
+
+**Revisit if:** categories become load-bearing, or users would mistake a
+failed fetch for "there are no categories".
