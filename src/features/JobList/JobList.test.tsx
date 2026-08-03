@@ -27,6 +27,10 @@ describe('JobList', () => {
     mockUseCategories.mockReturnValue({ data: [{ id: 19, name: 'Software Development', slug: 'software-dev' }] });
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('shows a loading indicator in the list body while the query is loading', async () => {
     mockUseJobs.mockReturnValue({ ...baseResult, isLoading: true });
     const { getByTestId, getByText, queryByText } = await render(<JobList />);
@@ -99,12 +103,14 @@ describe('JobList', () => {
       data: { jobCount: 2, totalJobCount: 2, jobs: [backend, designer] },
     });
 
+    jest.useFakeTimers();
     const { getByText, getByLabelText, queryByText, getByPlaceholderText } = await render(<JobList />);
     expect(getByText('Senior Backend Engineer')).toBeTruthy();
     expect(getByText('Product Designer')).toBeTruthy();
 
     await fireEvent.press(getByLabelText('Filters'));
     await fireEvent.changeText(getByPlaceholderText('Search by title or company'), 'backend');
+    await act(() => jest.advanceTimersByTime(200));
 
     expect(getByText('Senior Backend Engineer')).toBeTruthy();
     expect(queryByText('Product Designer')).toBeNull();
@@ -114,9 +120,11 @@ describe('JobList', () => {
     const job = makeJob({ title: 'Senior Backend Engineer' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
 
+    jest.useFakeTimers();
     const { getByText, getByLabelText, queryByText, getByPlaceholderText } = await render(<JobList />);
     await fireEvent.press(getByLabelText('Filters'));
     await fireEvent.changeText(getByPlaceholderText('Search by title or company'), 'nonexistent role');
+    await act(() => jest.advanceTimersByTime(200));
 
     expect(getByText('No matching jobs')).toBeTruthy();
     expect(queryByText('No jobs found')).toBeNull();
@@ -180,11 +188,13 @@ describe('JobList', () => {
       data: { jobCount: 2, totalJobCount: 2, jobs: [backend, designer] },
     });
 
+    jest.useFakeTimers();
     const { getByText, getByLabelText, getByPlaceholderText, queryByPlaceholderText } = await render(<JobList />);
     await fireEvent.press(getByLabelText('Filters'));
     expect(getByText('Show 2 jobs')).toBeTruthy();
 
     await fireEvent.changeText(getByPlaceholderText('Search by title or company'), 'backend');
+    await act(() => jest.advanceTimersByTime(200));
     expect(getByText('Show 1 job')).toBeTruthy();
 
     await fireEvent.press(getByText('Show 1 job'));

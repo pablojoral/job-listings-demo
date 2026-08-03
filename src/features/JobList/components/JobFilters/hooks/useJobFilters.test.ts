@@ -21,6 +21,10 @@ describe('useJobFilters', () => {
     mockUseCategories.mockReturnValue({ data: categories });
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('reads the current filter selection from the store', async () => {
     const { result } = await renderHook(() => useJobFilters());
     expect(result.current.search).toBe('');
@@ -53,11 +57,8 @@ describe('useJobFilters', () => {
     ]);
   });
 
-  it('writes search, category, and job type changes to the store', async () => {
+  it('writes category and job type changes to the store immediately', async () => {
     const { result } = await renderHook(() => useJobFilters());
-
-    await act(() => result.current.onChangeSearch('engineer'));
-    expect(useJobFiltersStore.getState().search).toBe('engineer');
 
     await act(() => result.current.onChangeCategory('Design'));
     expect(useJobFiltersStore.getState().category).toBe('Design');
@@ -66,12 +67,65 @@ describe('useJobFilters', () => {
     expect(useJobFiltersStore.getState().jobTypes).toEqual(['contract', 'freelance']);
   });
 
-  it('clears the search text via onClearSearch', async () => {
+  it('echoes typed search immediately but commits it to the store only after the debounce pause', async () => {
+    jest.useFakeTimers();
+    const { result } = await renderHook(() => useJobFilters());
+
+    await act(() => result.current.onChangeSearch('engineer'));
+    expect(result.current.search).toBe('engineer');
+    expect(useJobFiltersStore.getState().search).toBe('');
+
+    await act(() => jest.advanceTimersByTime(200));
+    expect(useJobFiltersStore.getState().search).toBe('engineer');
+  });
+
+  it('commits only the last value of a burst of keystrokes', async () => {
+    jest.useFakeTimers();
+    const { result } = await renderHook(() => useJobFilters());
+
+    await act(() => result.current.onChangeSearch('e'));
+    await act(() => jest.advanceTimersByTime(100));
+    await act(() => result.current.onChangeSearch('en'));
+    await act(() => jest.advanceTimersByTime(100));
+    await act(() => result.current.onChangeSearch('eng'));
+    expect(useJobFiltersStore.getState().search).toBe('');
+
+    await act(() => jest.advanceTimersByTime(200));
+    expect(useJobFiltersStore.getState().search).toBe('eng');
+  });
+
+  it('clears the search immediately and cancels a pending commit', async () => {
+    jest.useFakeTimers();
     const { result } = await renderHook(() => useJobFilters());
     await act(() => result.current.onChangeSearch('engineer'));
 
     await act(() => result.current.onClearSearch());
+    expect(result.current.search).toBe('');
+
+    await act(() => jest.advanceTimersByTime(300));
     expect(useJobFiltersStore.getState().search).toBe('');
+  });
+
+  it('cancels a pending search commit on reset', async () => {
+    jest.useFakeTimers();
+    const { result } = await renderHook(() => useJobFilters());
+    await act(() => result.current.onChangeSearch('engineer'));
+
+    await act(() => result.current.onReset());
+    expect(result.current.search).toBe('');
+
+    await act(() => jest.advanceTimersByTime(300));
+    expect(useJobFiltersStore.getState().search).toBe('');
+  });
+
+  it('flushes a pending search commit when unmounted', async () => {
+    jest.useFakeTimers();
+    const { result, unmount } = await renderHook(() => useJobFilters());
+    await act(() => result.current.onChangeSearch('engineer'));
+    expect(useJobFiltersStore.getState().search).toBe('');
+
+    await unmount();
+    expect(useJobFiltersStore.getState().search).toBe('engineer');
   });
 
   it('reports hasActiveFilters as filters are applied and cleared via onReset', async () => {
