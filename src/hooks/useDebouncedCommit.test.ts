@@ -59,16 +59,6 @@ describe('useDebouncedCommit', () => {
     expect(commit).toHaveBeenCalledTimes(1);
   });
 
-  it('discardPending cancels the pending commit without committing', async () => {
-    const commit = jest.fn();
-    const { result } = await renderDebounced(commit);
-    await act(() => result.current.onChange('engineer'));
-
-    await act(() => result.current.discardPending());
-    await act(() => jest.advanceTimersByTime(300));
-    expect(commit).not.toHaveBeenCalled();
-  });
-
   it('adopts external value changes into the draft while no commit is pending', async () => {
     const commit = jest.fn();
     const { result, rerender } = await renderDebounced(commit, 'initial');

@@ -14,8 +14,6 @@ interface PendingCommit<T> {
  * - `onChange(next)` — update the draft now, commit after the pause.
  * - `commitNow(next)` — skip the pause and cancel any pending commit, for
  *   single deliberate actions like a clear button.
- * - `discardPending()` — cancel a pending commit without committing, when an
- *   external write to `value` (e.g. a store reset) is about to supersede it.
  * - External changes to `value` are adopted into the draft while no commit is
  *   pending (the draft is newer than `value` while one is).
  * - Unmounting flushes a pending commit — the last changes apply, never drop.
@@ -68,5 +66,5 @@ export const useDebouncedCommit = <T>(value: T, commit: (value: T) => void, dela
     [],
   );
 
-  return { draft, onChange, commitNow, discardPending };
+  return { draft, onChange, commitNow };
 };
