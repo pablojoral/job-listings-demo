@@ -27,7 +27,7 @@ export const FiltersModal = ({ visible, onClose, title, closeLabel, doneLabel }:
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView style={styles.overlay} behavior={KEYBOARD_BEHAVIOR}>
         <Pressable style={styles.backdrop} onPress={onClose} testID="filters-modal-backdrop" />
-        <View style={styles.sheet}>
+        <View style={styles.sheet} testID="filters-modal-sheet">
           <View style={styles.header}>
             <Text size="font-size-lg" weight="font-weight-bold">
               {title}

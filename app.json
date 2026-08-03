@@ -8,7 +8,6 @@
     "scheme": "joblistingsdemo",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.anonymous.job-listings-demo"
     },
     "android": {
@@ -18,7 +17,6 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.joblistingsdemo"
     },
     "web": {
@@ -38,8 +36,7 @@
       "expo-sqlite"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     }
   }
 }

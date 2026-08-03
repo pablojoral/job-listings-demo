@@ -1,6 +1,6 @@
 # Job Listings Demo
 
-A remote job listings browser built with [Expo](https://expo.dev) (SDK 57) and React Native. It fetches jobs from the public [Remotive API](https://github.com/remotive-com/remote-jobs-api), with client-side search and filtering, favorites persisted on-device, and a native HTML job description renderer. No API keys or backend setup required.
+A remote job listings browser built with [Expo](https://expo.dev) (SDK 52) and React Native. It fetches jobs from the public [Remotive API](https://github.com/remotive-com/remote-jobs-api), with client-side search and filtering, favorites persisted on-device, and a native HTML job description renderer. No API keys or backend setup required.
 
 ## Requirements
 
@@ -8,7 +8,7 @@ A remote job listings browser built with [Expo](https://expo.dev) (SDK 57) and R
 - **iOS:** Xcode 16+ with an iOS Simulator (macOS only)
 - **Android:** Android Studio with an emulator (or a device with USB debugging)
 
-> **Note:** the app uses native modules (`@expo/ui`, `expo-sqlite`), so it does **not** run in Expo Go — it must be built natively with the commands below. The native `ios/` and `android/` projects are already checked in.
+> **Note:** the project is set up as a native dev build (`expo-sqlite` persistence), so use the native build commands below rather than Expo Go. The `ios/` and `android/` projects are generated on first build (`npx expo run:ios` runs prebuild automatically).
 
 ## Run it
 

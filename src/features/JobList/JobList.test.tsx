@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { act, fireEvent, render, within } from '@testing-library/react-native';
 
 import { makeJob } from 'test/fixtures';
 
@@ -138,12 +138,13 @@ describe('JobList', () => {
       data: { jobCount: 2, totalJobCount: 2, jobs: [softwareJob, designJob] },
     });
 
-    // Queried by role: the card's Tag also renders the category as plain text,
-    // but only the dropdown's option row is a button named after it.
-    const { getByText, getByLabelText, getByTestId, getByRole, queryByText } = await render(<JobList />);
+    // Scoped to the modal sheet: the job card behind it is also a button whose
+    // subtree contains the category text, so an unscoped role query is ambiguous.
+    const { getByText, getByLabelText, getByTestId, queryByText } = await render(<JobList />);
     await fireEvent.press(getByLabelText('Filters'));
     await fireEvent.press(getByTestId('category-dropdown'));
-    await fireEvent.press(getByRole('button', { name: 'Software Development' }));
+    const sheet = within(getByTestId('filters-modal-sheet'));
+    await fireEvent.press(sheet.getByRole('button', { name: /^Software Development$/ }));
 
     expect(getByText('Backend Engineer')).toBeTruthy();
     expect(queryByText('Product Designer')).toBeNull();
@@ -157,9 +158,10 @@ describe('JobList', () => {
       data: { jobCount: 2, totalJobCount: 2, jobs: [contractJob, fullTimeJob] },
     });
 
-    const { getByText, getByRole, getByLabelText, queryByText } = await render(<JobList />);
+    const { getByText, getByTestId, getByLabelText, queryByText } = await render(<JobList />);
     await fireEvent.press(getByLabelText('Filters'));
-    await fireEvent.press(getByRole('button', { name: 'Contract' }));
+    const sheet = within(getByTestId('filters-modal-sheet'));
+    await fireEvent.press(sheet.getByRole('button', { name: /^Contract$/ }));
 
     expect(getByText('Contract Engineer')).toBeTruthy();
     expect(queryByText('Staff Engineer')).toBeNull();
@@ -169,11 +171,12 @@ describe('JobList', () => {
     const contractJob = makeJob({ jobType: 'contract' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [contractJob] } });
 
-    const { getByText, getByRole, getByLabelText, queryByText } = await render(<JobList />);
+    const { getByText, getByTestId, getByLabelText, queryByText } = await render(<JobList />);
     expect(queryByText('1')).toBeNull();
 
     await fireEvent.press(getByLabelText('Filters'));
-    await fireEvent.press(getByRole('button', { name: 'Contract' }));
+    const sheet = within(getByTestId('filters-modal-sheet'));
+    await fireEvent.press(sheet.getByRole('button', { name: /^Contract$/ }));
     await fireEvent.press(getByLabelText('Close filters'));
 
     expect(getByText('1')).toBeTruthy();
