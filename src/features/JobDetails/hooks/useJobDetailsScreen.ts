@@ -5,7 +5,6 @@ import { useJobs } from 'query/Jobs/useJobs';
 import { useFavoritesStore } from 'store/Favorites/useFavoritesStore';
 import { formatJobType } from 'utils/formatJobType';
 import { formatPostedDate } from 'utils/formatPostedDate';
-import { stripHtml } from 'utils/stripHtml';
 
 /**
  * Remotive has no per-id endpoint (see api rules §4), so the job is looked up
@@ -37,7 +36,7 @@ export const useJobDetailsScreen = () => {
     // nothing to show yet.
     isLoading: isLoading && !job,
     isFavorite,
-    description: job ? stripHtml(job.description) : '',
+    description: job?.description ?? '',
     postedDate: job ? formatPostedDate(job.publicationDate) : '',
     jobTypeLabel: job ? formatJobType(job.jobType) : '',
     handleToggleFavorite,

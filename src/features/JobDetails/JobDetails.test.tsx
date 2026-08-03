@@ -49,7 +49,7 @@ describe('JobDetails', () => {
     expect(queryByText('Job not found')).toBeNull();
   });
 
-  it('renders the job details with a plain-text description', async () => {
+  it('renders the job details with a rich-text description', async () => {
     const job = makeJob({
       id: 7,
       title: 'Senior Backend Engineer',
@@ -61,7 +61,8 @@ describe('JobDetails', () => {
     const { getByText } = await render(<JobDetails />);
     expect(getByText('Senior Backend Engineer')).toBeTruthy();
     expect(getByText('Acme')).toBeTruthy();
-    expect(getByText('Build APIs')).toBeTruthy();
+    expect(getByText(/Build/)).toBeTruthy();
+    expect(getByText('APIs')).toBeTruthy();
   });
 
   it('shows the salary range when the listing provides one', async () => {
@@ -97,7 +98,7 @@ describe('JobDetails', () => {
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [job] } });
 
     const { getByText } = await render(<JobDetails />);
-    await fireEvent.press(getByText('Open on Remotive'));
+    await fireEvent.press(getByText('Apply on Remotive'));
     expect(mockOpenBrowser).toHaveBeenCalledWith('https://remotive.com/remote-jobs/job-7');
   });
 });

@@ -23,6 +23,12 @@ export const useJobDetailsTheme = () => {
       flexDirection: 'row',
       gap: theme.spacing['spacing-sm'],
     },
+    footer: {
+      padding: theme.spacing['spacing-md'],
+      borderTopWidth: theme.borderWidth['border-width-hairline'],
+      borderTopColor: theme.borderColor['border-secondary'],
+      backgroundColor: theme.surfaceColor['surface-background'],
+    },
     centered: {
       flex: 1,
       alignItems: 'center',

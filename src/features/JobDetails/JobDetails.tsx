@@ -9,6 +9,7 @@ import { JobHeader } from 'components/domain/JobHeader/JobHeader';
 import { Tag } from 'components/ui/Tag/Tag';
 import { Text } from 'components/ui/Text/Text';
 
+import { JobDescription } from './components/JobDescription/JobDescription';
 import { useJobDetailsScreen } from './hooks/useJobDetailsScreen';
 import { useJobDetailsTheme } from './theme/useJobDetailsTheme';
 
@@ -65,7 +66,6 @@ export const JobDetails = () => {
             variant={isFavorite ? 'primary' : 'secondary'}
             onPress={handleToggleFavorite}
           />
-          <Button label="Open on Remotive" variant="ghost" onPress={handleOpenListing} />
         </View>
 
         {description ? (
@@ -73,12 +73,14 @@ export const JobDetails = () => {
             <Text size="font-size-lg" weight="font-weight-semibold">
               About this role
             </Text>
-            <Text color="font-secondary" size="font-size-sm">
-              {description}
-            </Text>
+            <JobDescription html={description} />
           </>
         ) : null}
       </ScrollView>
+
+      <View style={styles.footer}>
+        <Button label="Apply on Remotive" fullWidth onPress={handleOpenListing} />
+      </View>
     </SafeAreaView>
   );
 };
