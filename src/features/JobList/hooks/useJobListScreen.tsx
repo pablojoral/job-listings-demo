@@ -27,7 +27,8 @@ export const useJobListScreen = () => {
   const [isFiltersVisible, setIsFiltersVisible] = useState(false);
 
   // On error the list renders empty — even when cached data exists — so the
-  // error state in the empty slot replaces the list entirely.
+  // error state in the empty slot replaces the list entirely. Deliberate, to
+  // keep the error UI easy to demo (see DECISIONS.md 2026-08-03).
   const jobs = useMemo(
     () => (isError ? [] : filterJobs(data?.jobs ?? [], { search, category, jobTypes })),
     [isError, data, search, category, jobTypes],

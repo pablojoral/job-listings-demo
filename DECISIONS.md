@@ -16,3 +16,45 @@ without a corresponding benefit here.
 
 **Revisit if:** the project grows collaborators, needs a deployed environment
 that `main` should track safely, or otherwise stops being a single-author demo.
+
+---
+
+## 2026-08-03 — Query errors replace the job list, even when cached data exists
+
+**Decision:** When the jobs query is in error state, the list renders empty and
+the full error state shows in its place (`useJobListScreen` maps `isError` to
+`[]`) — including after a failed refetch where TanStack Query still holds
+previously fetched data.
+
+**Context:** This is deliberate so the error state is easy to reach and
+demonstrate in a demo: turn off connectivity, pull to refresh, and the error UI
+appears — no need to cold-start the app without a network to ever see it. The
+error renders inside the FlatList's empty slot (not an early-return view) so
+pull-to-refresh stays mounted and can retry.
+
+The production-friendly pattern is known and intentionally not used here: show
+the full-screen error only when there is no data at all (`isError && !data`),
+and surface refetch failures as a banner/toast over the stale list so a flaky
+refresh never makes existing results vanish.
+
+**Revisit if:** this stops being a demo and real users would lose a loaded
+list to a failed background refresh.
+
+---
+
+## 2026-08-03 — Fetch the full jobs list, descriptions included, in one request
+
+**Decision:** `JobsService.list` fetches Remotive's entire jobs list with no
+`limit`, including every job's HTML `description`, and the whole payload lives
+in a single query cache entry.
+
+**Context:** This is a demo, and the app's design is fetch-once + client-side
+filtering: Remotive has no server-side pagination and no per-id detail
+endpoint, so favorites and the details screen resolve jobs against this one
+cached list. Trimming the payload (a `limit`, or stripping `description` from
+the list) would break that resolution for no demo benefit. The cost — a
+multi-MB JSON payload parsed on launch and re-fetched wholesale on refresh —
+is accepted.
+
+**Revisit if:** the backend gains real pagination/filtering or a detail
+endpoint, or the payload grows enough to hurt launch time on real devices.
