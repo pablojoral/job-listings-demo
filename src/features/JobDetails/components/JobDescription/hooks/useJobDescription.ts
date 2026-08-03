@@ -42,7 +42,9 @@ export const useJobDescription = (html: string) => {
     () => ({
       a: {
         onPress: (_event: GestureResponderEvent, href: string) => {
-          WebBrowser.openBrowserAsync(href);
+          // No failure UI to recover into — warn and drop instead of leaving
+          // an unhandled rejection.
+          WebBrowser.openBrowserAsync(href).catch((error) => console.warn('Failed to open link', error));
         },
       },
     }),

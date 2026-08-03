@@ -9,7 +9,7 @@ import { useFavoritesStore } from 'store/Favorites/useFavoritesStore';
 jest.mock('query/Jobs/useJobs', () => ({ useJobs: jest.fn() }));
 jest.mock('expo-linking', () => ({ createURL: jest.fn(() => 'joblistingsdemo://jobs/7') }));
 jest.mock('expo-router', () => ({ useLocalSearchParams: jest.fn() }));
-jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
+jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn().mockResolvedValue(undefined) }));
 
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams } from 'expo-router';

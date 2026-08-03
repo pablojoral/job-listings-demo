@@ -28,13 +28,20 @@ export const useJobDetailsScreen = () => {
     if (job) toggleFavorite(job.id);
   };
 
+  // The native browser/share flows have no failure UI to recover into, so a
+  // rejection (e.g. a browser session already open) is warned and dropped
+  // rather than left as an unhandled rejection.
   const handleOpenListing = () => {
-    if (job) WebBrowser.openBrowserAsync(job.url);
+    if (job) {
+      WebBrowser.openBrowserAsync(job.url).catch((error) => console.warn('Failed to open listing', error));
+    }
   };
 
   const handleShare = () => {
     if (job) {
-      Share.share({ message: `${job.title} at ${job.companyName}\n${Linking.createURL(`/jobs/${job.id}`)}` });
+      Share.share({ message: `${job.title} at ${job.companyName}\n${Linking.createURL(`/jobs/${job.id}`)}` }).catch(
+        (error) => console.warn('Failed to share job', error),
+      );
     }
   };
 

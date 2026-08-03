@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
-jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
+jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn().mockResolvedValue(undefined) }));
 
 import * as WebBrowser from 'expo-web-browser';
 
