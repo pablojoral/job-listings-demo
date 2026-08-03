@@ -1,16 +1,14 @@
-/** @format */
+import { useRouter } from 'expo-router';
+import { useJobs } from 'query/Jobs/useJobs';
+import { useCallback, useMemo, useState } from 'react';
+import { useJobFiltersStore } from 'store/JobFilters/useJobFiltersStore';
 
-import { useJobs } from "query/Jobs/useJobs";
-import { useCallback, useMemo, useState } from "react";
-import { useJobFiltersStore } from "store/JobFilters/useJobFiltersStore";
+import { JobCard } from 'components/domain/JobCard/JobCard';
+import { filterJobs } from '../utils/filterJobs';
 
-import { JobCard } from "../components/JobCard/JobCard";
-import { filterJobs } from "../utils/filterJobs";
-import { useJobListStrings } from "./useJobListStrings";
-
-import type { Job } from "models/models";
+import type { Job } from 'models/Job';
 export const useJobListScreen = () => {
-  const strings = useJobListStrings();
+  const router = useRouter();
   const { data, isLoading, isError, isRefetching, refetch } = useJobs();
   const search = useJobFiltersStore((state) => state.search);
   const category = useJobFiltersStore((state) => state.category);
@@ -23,13 +21,12 @@ export const useJobListScreen = () => {
     [data, search, category, jobTypes],
   );
 
-  const activeFiltersCount =
-    (search ? 1 : 0) + (category ? 1 : 0) + jobTypes.length;
+  const activeFiltersCount = (search ? 1 : 0) + (category ? 1 : 0) + jobTypes.length;
   const hasActiveFilters = activeFiltersCount > 0;
 
   const renderItem = useCallback(
-    ({ item }: { item: Job }) => <JobCard job={item} />,
-    [],
+    ({ item }: { item: Job }) => <JobCard job={item} onPress={() => router.push(`/jobs/${item.id}`)} />,
+    [router],
   );
   const keyExtractor = useCallback((item: Job) => String(item.id), []);
 
@@ -39,13 +36,11 @@ export const useJobListScreen = () => {
     isError,
     isRefetching,
     activeFiltersCount,
-    emptyStateTitle: hasActiveFilters
-      ? strings.filteredEmptyTitle
-      : strings.emptyTitle,
+    emptyStateTitle: hasActiveFilters ? 'No matching jobs' : 'No jobs found',
     emptyStateMessage: hasActiveFilters
-      ? strings.filteredEmptyMessage
-      : strings.emptyMessage,
-    filtersDoneLabel: strings.showResults(jobs.length),
+      ? 'Try adjusting your search or filters.'
+      : 'Check back soon for new remote opportunities.',
+    filtersDoneLabel: jobs.length === 1 ? 'Show 1 job' : `Show ${jobs.length} jobs`,
     isFiltersVisible,
     openFilters: () => setIsFiltersVisible(true),
     closeFilters: () => setIsFiltersVisible(false),

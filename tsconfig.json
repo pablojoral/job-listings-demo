@@ -6,12 +6,6 @@
       "jest"
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/assets/*": [
-        "./assets/*"
-      ],
       "theme/*": [
         "./src/theme/*"
       ],

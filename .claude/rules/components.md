@@ -85,26 +85,26 @@ Pure formatting/utility functions (e.g. `formatSalaryRange`, `formatPostedDate`)
 
 When a custom component exists, always use it. Never reach for the bare RN primitive.
 
-| Instead of                                 | Use                                                                         |
-| ------------------------------------------ | ----------------------------------------------------------------------------|
-| `<Text>` from `react-native`               | `<Text>` from `components/Text/Text`                                        |
-| `<ActivityIndicator>` from `react-native`  | `<ActivityIndicator>` from `components/ActivityIndicator/ActivityIndicator` |
-| `<TouchableOpacity>` for a labelled action | `<Button>` from `components/Button/Button`                                  |
+| Instead of                                 | Use                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------|
+| `<Text>` from `react-native`               | `<Text>` from `components/ui/Text/Text`                                        |
+| `<ActivityIndicator>` from `react-native`  | `<ActivityIndicator>` from `components/ui/ActivityIndicator/ActivityIndicator` |
+| `<TouchableOpacity>` for a labelled action | `<Button>` from `components/ui/Button/Button`                                  |
 
 ```tsx
 // BAD
 import { Text, ActivityIndicator } from 'react-native';
 
 // GOOD
-import { Text } from 'components/Text/Text';
-import { ActivityIndicator } from 'components/ActivityIndicator/ActivityIndicator';
+import { Text } from 'components/ui/Text/Text';
+import { ActivityIndicator } from 'components/ui/ActivityIndicator/ActivityIndicator';
 ```
 
 ---
 
 ## 5. Extract abstract components whenever a pattern repeats
 
-If a UI pattern appears more than once, or is complex enough to reason about independently, extract it to `src/components/`. Prefer a reusable abstraction over copy-pasting structure.
+If a UI pattern appears more than once, or is complex enough to reason about independently, extract it out of the feature. Prefer a reusable abstraction over copy-pasting structure.
 
 Signs you should extract:
 
@@ -112,12 +112,44 @@ Signs you should extract:
 - A self-contained section inside a screen (empty state, list header, card)
 - Any component with its own local state or animation
 
+**Shared components live in one of two tiers under `src/components/` — pick by what the
+component knows, not who calls it:**
+
+| Tier | Folder | May import | Examples |
+|---|---|---|---|
+| Design system (app-agnostic) | `components/ui/` | `theme/`, other `components/ui/` — **never** `models/`, `store/`, `query/`, `features/`, `components/domain/` | `Text`, `Button`, `Dropdown`, `EmptyState`, `Tag` |
+| Domain-shared | `components/domain/` | `components/ui/`, `models/`, `store/`, `query/` | `JobCard`, `JobHeader`, `CompanyLogo` |
+
+A component that takes only generic props (`label`, `icon`, `onPress`) belongs in
+`components/ui/`, even if only job screens use it today. A component that imports a domain
+model or a store belongs in `components/domain/`.
+
+**Features never import from another feature's folder.** `features/<A>/` importing from
+`features/<B>/` is forbidden — the moment a second feature needs a component, promote it to
+the appropriate tier instead. A feature's `components/` folder is private to that feature.
+
+```tsx
+// BAD — FavoritesList reaching into JobList's internals
+import { JobCard } from 'features/JobList/components/JobCard/JobCard';
+
+// GOOD — domain-shared component promoted to components/domain/
+import { JobCard } from 'components/domain/JobCard/JobCard';
+```
+
 ```
 src/components/
-  JobCard/
-    JobCard.tsx
-    theme/
-      useJobCardTheme.ts
+  ui/
+    Button/
+      Button.tsx
+      theme/
+        useButtonTheme.ts
+  domain/
+    JobCard/
+      JobCard.tsx
+      hooks/
+        useJobCard.ts
+      theme/
+        useJobCardTheme.ts
 ```
 
 ---
@@ -158,7 +190,7 @@ logic:
 
 ```tsx
 // src/app/jobs/[id].tsx
-import { JobDetail } from '@/features/JobDetail/JobDetail';
+import { JobDetail } from 'features/JobDetail/JobDetail';
 export default JobDetail;
 ```
 
@@ -207,45 +239,7 @@ export const JobsEmptyState = () => { ... };
 
 ---
 
-## 10. Strings and labels always live in a dedicated `use[Component]Strings` hook
-
-Never call `useTranslation` or `t()` inside a logic hook (e.g. `useMyScreen.ts`). All translated strings must be extracted into a separate `use[Component]Strings.ts` file co-located in the same `hooks/` folder. The logic hook imports from it.
-
-```
-features/JobList/hooks/
-  useJobList.ts         ← logic only — no useTranslation
-  useJobListStrings.ts  ← all t() calls live here
-```
-
-```ts
-// BAD — translation mixed into logic hook
-export const useJobList = () => {
-  const { t } = useTranslation('common');
-  const title = t('jobList.title');
-  const [filters, setFilters] = useState({});
-  return { title, filters, setFilters };
-};
-
-// GOOD — strings isolated
-// useJobListStrings.ts
-export const useJobListStrings = () => {
-  const { t } = useTranslation('common');
-  return { title: t('jobList.title') };
-};
-
-// useJobList.ts
-export const useJobList = () => {
-  const { title } = useJobListStrings();
-  const [filters, setFilters] = useState({});
-  return { title, filters, setFilters };
-};
-```
-
-If a hook contains **only** translated strings and no logic, name the file `use[Component]Strings.ts` directly — do not create a separate empty logic hook.
-
----
-
-## 11. No `any` in component props or hook return types
+## 10. No `any` in component props or hook return types
 
 Use proper model types from `src/models/` or derive precise types from API responses. `any` in a prop type defeats TypeScript's value entirely.
 

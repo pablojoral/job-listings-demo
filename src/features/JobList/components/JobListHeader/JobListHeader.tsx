@@ -1,8 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 
-import { IconButton } from 'components/IconButton/IconButton';
-import { Text } from 'components/Text/Text';
+import { IconButton } from 'components/ui/IconButton/IconButton';
+import { Text } from 'components/ui/Text/Text';
 
 import { useJobListHeaderTheme } from './theme/useJobListHeaderTheme';
 
@@ -21,7 +21,12 @@ export const JobListHeader = ({ title, filtersLabel, activeFiltersCount, onOpenF
       <Text size="font-size-xxl" weight="font-weight-bold">
         {title}
       </Text>
-      <IconButton icon="filter" accessibilityLabel={filtersLabel} onPress={onOpenFilters} badgeCount={activeFiltersCount} />
+      <IconButton
+        icon="filter"
+        accessibilityLabel={filtersLabel}
+        onPress={onOpenFilters}
+        badgeCount={activeFiltersCount}
+      />
     </View>
   );
 };

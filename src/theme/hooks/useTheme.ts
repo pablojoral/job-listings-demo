@@ -1,8 +1,6 @@
-/** @format */
-
-import { useMemo } from "react";
-import { useColorScheme } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useMemo } from 'react';
+import { useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   borderWidth,
@@ -14,7 +12,7 @@ import {
   lightColors,
   lineHeight,
   spacing,
-} from "../tokens";
+} from '../tokens';
 
 /**
  * The single hook every `use<Name>Theme` hook calls to read design constants.
@@ -28,10 +26,10 @@ export const useTheme = () => {
   const insets = useSafeAreaInsets();
 
   return useMemo(() => {
-    const colors = scheme === "dark" ? darkColors : lightColors;
+    const colors = scheme === 'dark' ? darkColors : lightColors;
 
     return {
-      isDark: scheme === "dark",
+      isDark: scheme === 'dark',
       spacing,
       cornerRad,
       fontSize,

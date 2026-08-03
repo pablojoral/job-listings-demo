@@ -2,14 +2,12 @@ import React from 'react';
 import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ActivityIndicator } from 'components/ActivityIndicator/ActivityIndicator';
+import { ActivityIndicator } from 'components/ui/ActivityIndicator/ActivityIndicator';
+import { EmptyState } from 'components/ui/EmptyState/EmptyState';
 
 import { FiltersModal } from './components/FiltersModal/FiltersModal';
 import { JobListHeader } from './components/JobListHeader/JobListHeader';
-import { JobsEmptyState } from './components/JobsEmptyState/JobsEmptyState';
-import { JobsErrorState } from './components/JobsErrorState/JobsErrorState';
 import { useJobListScreen } from './hooks/useJobListScreen';
-import { useJobListStrings } from './hooks/useJobListStrings';
 import { useJobListTheme } from './theme/useJobListTheme';
 
 export const JobList = () => {
@@ -29,7 +27,6 @@ export const JobList = () => {
     renderItem,
     keyExtractor,
   } = useJobListScreen();
-  const strings = useJobListStrings();
   const { styles } = useJobListTheme();
 
   if (isLoading) {
@@ -43,7 +40,12 @@ export const JobList = () => {
   if (isError) {
     return (
       <SafeAreaView style={styles.container}>
-        <JobsErrorState title={strings.errorTitle} message={strings.errorMessage} />
+        <EmptyState
+          icon="close"
+          iconColor="font-danger"
+          title="Something went wrong"
+          message="We couldn't load job listings. Pull down to try again."
+        />
       </SafeAreaView>
     );
   }
@@ -57,21 +59,21 @@ export const JobList = () => {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <JobListHeader
-            title={strings.screenTitle}
-            filtersLabel={strings.filtersButtonLabel}
+            title="Job Listings"
+            filtersLabel="Filters"
             activeFiltersCount={activeFiltersCount}
             onOpenFilters={openFilters}
           />
         }
-        ListEmptyComponent={<JobsEmptyState title={emptyStateTitle} message={emptyStateMessage} />}
+        ListEmptyComponent={<EmptyState icon="search" title={emptyStateTitle} message={emptyStateMessage} />}
         refreshing={isRefetching}
         onRefresh={handleRefresh}
       />
       <FiltersModal
         visible={isFiltersVisible}
         onClose={closeFilters}
-        title={strings.filtersTitle}
-        closeLabel={strings.filtersCloseLabel}
+        title="Filters"
+        closeLabel="Close filters"
         doneLabel={filtersDoneLabel}
       />
     </SafeAreaView>

@@ -1,14 +1,10 @@
-import type { DropdownOption } from 'components/Dropdown/Dropdown';
-import type { MultiSelectOption } from 'components/MultiSelect/MultiSelect';
+import type { DropdownOption } from 'components/ui/Dropdown/Dropdown';
+import type { MultiSelectOption } from 'components/ui/MultiSelect/MultiSelect';
 import { useCategories } from 'query/Categories/useCategories';
-import { JOB_TYPES, type JobType } from 'services/api/services/JobsService';
+import { JOB_TYPE_LABELS, JOB_TYPES, type JobType } from 'models/Job';
 import { useJobFiltersStore } from 'store/JobFilters/useJobFiltersStore';
 
-import { useJobFiltersStrings } from './useJobFiltersStrings';
-
 export const useJobFilters = () => {
-  const { jobTypeLabels } = useJobFiltersStrings();
-
   const search = useJobFiltersStore((state) => state.search);
   const category = useJobFiltersStore((state) => state.category);
   const jobTypes = useJobFiltersStore((state) => state.jobTypes);
@@ -20,7 +16,7 @@ export const useJobFilters = () => {
   const { data: categories = [] } = useCategories();
 
   const categoryOptions: DropdownOption[] = categories.map((cat) => ({ value: cat.name, label: cat.name }));
-  const jobTypeOptions: MultiSelectOption[] = JOB_TYPES.map((type) => ({ value: type, label: jobTypeLabels[type] }));
+  const jobTypeOptions: MultiSelectOption[] = JOB_TYPES.map((type) => ({ value: type, label: JOB_TYPE_LABELS[type] }));
 
   const hasActiveFilters = Boolean(search || category || jobTypes.length > 0);
 

@@ -8,6 +8,9 @@ import { useJobFiltersStore } from 'store/JobFilters/useJobFiltersStore';
 jest.mock('query/Jobs/useJobs', () => ({ useJobs: jest.fn() }));
 jest.mock('query/Categories/useCategories', () => ({ useCategories: jest.fn() }));
 
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+
 import { useCategories } from 'query/Categories/useCategories';
 import { useJobs } from 'query/Jobs/useJobs';
 
@@ -128,9 +131,9 @@ describe('JobList', () => {
       data: { jobCount: 2, totalJobCount: 2, jobs: [contractJob, fullTimeJob] },
     });
 
-    const { getByText, getByLabelText, queryByText } = await render(<JobList />);
+    const { getByText, getByRole, getByLabelText, queryByText } = await render(<JobList />);
     await fireEvent.press(getByLabelText('Filters'));
-    await fireEvent.press(getByText('Contract'));
+    await fireEvent.press(getByRole('button', { name: 'Contract' }));
 
     expect(getByText('Contract Engineer')).toBeTruthy();
     expect(queryByText('Staff Engineer')).toBeNull();
@@ -140,11 +143,11 @@ describe('JobList', () => {
     const contractJob = makeJob({ jobType: 'contract' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [contractJob] } });
 
-    const { getByText, getByLabelText, queryByText } = await render(<JobList />);
+    const { getByText, getByRole, getByLabelText, queryByText } = await render(<JobList />);
     expect(queryByText('1')).toBeNull();
 
     await fireEvent.press(getByLabelText('Filters'));
-    await fireEvent.press(getByText('Contract'));
+    await fireEvent.press(getByRole('button', { name: 'Contract' }));
     await fireEvent.press(getByLabelText('Close filters'));
 
     expect(getByText('1')).toBeTruthy();

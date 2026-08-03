@@ -1,16 +1,13 @@
-/** @format */
+import { View } from 'react-native';
 
-import { View } from "react-native";
+import { Button } from 'components/ui/Button/Button';
+import { Dropdown } from 'components/ui/Dropdown/Dropdown';
+import { MultiSelect } from 'components/ui/MultiSelect/MultiSelect';
+import { Text } from 'components/ui/Text/Text';
+import { TextInput } from 'components/ui/TextInput/TextInput';
 
-import { Button } from "components/Button/Button";
-import { Dropdown } from "components/Dropdown/Dropdown";
-import { MultiSelect } from "components/MultiSelect/MultiSelect";
-import { Text } from "components/Text/Text";
-import { TextInput } from "components/TextInput/TextInput";
-
-import { useJobFilters } from "./hooks/useJobFilters";
-import { useJobFiltersStrings } from "./hooks/useJobFiltersStrings";
-import { useJobFiltersTheme } from "./theme/useJobFiltersTheme";
+import { useJobFilters } from './hooks/useJobFilters';
+import { useJobFiltersTheme } from './theme/useJobFiltersTheme';
 
 export const JobFilters = () => {
   const {
@@ -26,7 +23,6 @@ export const JobFilters = () => {
     hasActiveFilters,
     onReset,
   } = useJobFilters();
-  const strings = useJobFiltersStrings();
   const { styles } = useJobFiltersTheme();
 
   return (
@@ -34,48 +30,30 @@ export const JobFilters = () => {
       <TextInput
         value={search}
         onChangeText={onChangeSearch}
-        placeholder={strings.searchPlaceholder}
+        placeholder="Search by title or company"
         icon="search"
         onClear={onClearSearch}
-        clearLabel={strings.searchClearLabel}
+        clearLabel="Clear search"
       />
       <View style={styles.section}>
-        <Text
-          color="font-secondary"
-          size="font-size-sm"
-          weight="font-weight-semibold"
-        >
-          {strings.categoryLabel}
+        <Text color="font-secondary" size="font-size-sm" weight="font-weight-semibold">
+          Category
         </Text>
         <Dropdown
           options={categoryOptions}
           selectedValue={selectedCategory}
           onChange={onChangeCategory}
-          placeholder={strings.categoryPlaceholder}
+          placeholder="All categories"
           testID="category-dropdown"
         />
       </View>
       <View style={styles.section}>
-        <Text
-          color="font-secondary"
-          size="font-size-sm"
-          weight="font-weight-semibold"
-        >
-          {strings.jobTypeLabel}
+        <Text color="font-secondary" size="font-size-sm" weight="font-weight-semibold">
+          Job type
         </Text>
-        <MultiSelect
-          options={jobTypeOptions}
-          selectedValues={selectedJobTypes}
-          onChange={onChangeJobTypes}
-        />
+        <MultiSelect options={jobTypeOptions} selectedValues={selectedJobTypes} onChange={onChangeJobTypes} />
       </View>
-      <Button
-        label={strings.clearLabel}
-        fullWidth
-        variant="ghost"
-        onPress={onReset}
-        disabled={!hasActiveFilters}
-      />
+      <Button label="Clear filters" fullWidth variant="ghost" onPress={onReset} disabled={!hasActiveFilters} />
     </View>
   );
 };

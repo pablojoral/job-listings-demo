@@ -1,9 +1,9 @@
 import React from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 
-import { Button } from 'components/Button/Button';
-import { Icon } from 'components/Icon/Icon';
-import { Text } from 'components/Text/Text';
+import { Button } from 'components/ui/Button/Button';
+import { Icon } from 'components/ui/Icon/Icon';
+import { Text } from 'components/ui/Text/Text';
 
 import { JobFilters } from '../JobFilters/JobFilters';
 import { useFiltersModalTheme } from './theme/useFiltersModalTheme';
