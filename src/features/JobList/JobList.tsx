@@ -1,4 +1,3 @@
-import React from 'react';
 import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,11 +13,9 @@ export const JobList = () => {
   const {
     jobs,
     isLoading,
-    isError,
     isRefetching,
     activeFiltersCount,
-    emptyStateTitle,
-    emptyStateMessage,
+    emptyState,
     filtersDoneLabel,
     isFiltersVisible,
     openFilters,
@@ -29,30 +26,10 @@ export const JobList = () => {
   } = useJobListScreen();
   const { styles } = useJobListTheme();
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" style={styles.centered} testID="jobs-loading-indicator" />
-      </SafeAreaView>
-    );
-  }
-
-  if (isError) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <EmptyState
-          icon="close"
-          iconColor="font-danger"
-          title="Something went wrong"
-          message="We couldn't load job listings. Pull down to try again."
-        />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
+        testID="jobs-list"
         data={jobs}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
@@ -65,7 +42,18 @@ export const JobList = () => {
             onOpenFilters={openFilters}
           />
         }
-        ListEmptyComponent={<EmptyState icon="search" title={emptyStateTitle} message={emptyStateMessage} />}
+        ListEmptyComponent={
+          isLoading ? (
+            <ActivityIndicator size="large" style={styles.centered} testID="jobs-loading-indicator" />
+          ) : (
+            <EmptyState
+              icon={emptyState.icon}
+              iconColor={emptyState.iconColor}
+              title={emptyState.title}
+              message={emptyState.message}
+            />
+          )
+        }
         refreshing={isRefetching}
         onRefresh={handleRefresh}
       />

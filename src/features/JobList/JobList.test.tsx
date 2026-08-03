@@ -27,17 +27,36 @@ describe('JobList', () => {
     mockUseCategories.mockReturnValue({ data: [{ id: 19, name: 'Software Development', slug: 'software-dev' }] });
   });
 
-  it('shows a loading indicator while the query is loading', async () => {
+  it('shows a loading indicator in the list body while the query is loading', async () => {
     mockUseJobs.mockReturnValue({ ...baseResult, isLoading: true });
-    const { getByTestId, queryByText } = await render(<JobList />);
+    const { getByTestId, getByText, queryByText } = await render(<JobList />);
     expect(getByTestId('jobs-loading-indicator')).toBeTruthy();
-    expect(queryByText('Job Listings')).toBeNull();
+    // The list (and its header) stays mounted — only the body shows the spinner.
+    expect(getByText('Job Listings')).toBeTruthy();
+    expect(queryByText('No jobs found')).toBeNull();
   });
 
-  it('shows an error state when the query fails', async () => {
-    mockUseJobs.mockReturnValue({ ...baseResult, isError: true });
-    const { getByText } = await render(<JobList />);
+  it('shows an error state that can retry via pull-to-refresh', async () => {
+    const refetch = jest.fn();
+    mockUseJobs.mockReturnValue({ ...baseResult, isError: true, refetch });
+    const { getByText, getByTestId } = await render(<JobList />);
     expect(getByText('Something went wrong')).toBeTruthy();
+
+    await fireEvent(getByTestId('jobs-list'), 'refresh');
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('replaces the cached list with the error state when a refetch fails', async () => {
+    const job = makeJob({ title: 'Senior Backend Engineer' });
+    mockUseJobs.mockReturnValue({
+      ...baseResult,
+      isError: true,
+      data: { jobCount: 1, totalJobCount: 1, jobs: [job] },
+    });
+
+    const { getByText, queryByText } = await render(<JobList />);
+    expect(getByText('Something went wrong')).toBeTruthy();
+    expect(queryByText('Senior Backend Engineer')).toBeNull();
   });
 
   it('shows the empty state when there are no jobs', async () => {
