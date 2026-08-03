@@ -11,14 +11,13 @@ export const useFavoritesListScreen = () => {
   const router = useRouter();
   const { data, isLoading } = useJobs();
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
-  const snapshots = useFavoritesStore((state) => state.snapshots);
 
-  // Favorites must outlive Remotive's list churn: prefer the fresh job from
-  // the query cache, fall back to the snapshot taken at save time.
+  // Only ids are stored — each resolves against the client-fetched jobs list.
+  // An id whose listing expired off Remotive no longer resolves and is skipped.
   const jobs = useMemo(() => {
-    const freshById = new Map((data?.jobs ?? []).map((job) => [job.id, job]));
-    return favoriteIds.map((id) => freshById.get(id) ?? snapshots[id]).filter((job): job is Job => Boolean(job));
-  }, [data, favoriteIds, snapshots]);
+    const jobById = new Map((data?.jobs ?? []).map((job) => [job.id, job]));
+    return favoriteIds.map((id) => jobById.get(id)).filter((job): job is Job => Boolean(job));
+  }, [data, favoriteIds]);
 
   // One stable handler for every row: a per-row closure here would defeat
   // JobCard's memo (see its doc comment).
@@ -29,7 +28,5 @@ export const useFavoritesListScreen = () => {
   );
   const keyExtractor = useCallback((item: Job) => String(item.id), []);
 
-  // Snapshots render without the network — only block on the query while
-  // nothing resolves yet.
-  return { jobs, isLoading: isLoading && jobs.length === 0, renderItem, keyExtractor };
+  return { jobs, isLoading, renderItem, keyExtractor };
 };

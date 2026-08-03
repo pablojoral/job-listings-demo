@@ -11,8 +11,8 @@ import { formatPostedDate } from 'utils/formatPostedDate';
 
 /**
  * Remotive has no per-id endpoint (see api rules §4), so the job is looked up
- * in the already-fetched list — with the favorites snapshot as fallback, so a
- * favorited job still opens after its listing expires off Remotive.
+ * in the already-fetched list. An id that is not on the list — including a
+ * favorite whose listing expired off Remotive — shows the not-found state.
  */
 export const useJobDetailsScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,13 +20,12 @@ export const useJobDetailsScreen = () => {
 
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
-  const snapshot = useFavoritesStore((state) => state.snapshots[Number(id)]);
 
-  const job = data?.jobs.find((candidate) => String(candidate.id) === id) ?? snapshot;
+  const job = data?.jobs.find((candidate) => String(candidate.id) === id);
   const isFavorite = job ? favoriteIds.includes(job.id) : false;
 
   const handleToggleFavorite = () => {
-    if (job) toggleFavorite(job);
+    if (job) toggleFavorite(job.id);
   };
 
   const handleOpenListing = () => {
@@ -41,9 +40,7 @@ export const useJobDetailsScreen = () => {
 
   return {
     job,
-    // A snapshot renders immediately — only block on the query while there is
-    // nothing to show yet.
-    isLoading: isLoading && !job,
+    isLoading,
     isFavorite,
     description: job?.description ?? '',
     postedDate: job ? formatPostedDate(job.publicationDate) : '',

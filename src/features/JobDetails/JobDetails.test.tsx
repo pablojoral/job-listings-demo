@@ -45,14 +45,12 @@ describe('JobDetails', () => {
     expect(getByText('Job not found')).toBeTruthy();
   });
 
-  it('renders a favorited job from its snapshot after it expires off the API list', async () => {
-    const expired = makeJob({ id: 7, title: 'Expired Engineer' });
+  it('shows not-found for a favorited id whose listing expired off the API list', async () => {
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 0, totalJobCount: 0, jobs: [] } });
-    await act(() => useFavoritesStore.getState().toggleFavorite(expired));
+    await act(() => useFavoritesStore.getState().toggleFavorite(7));
 
-    const { getByText, queryByText } = await render(<JobDetails />);
-    expect(getByText('Expired Engineer')).toBeTruthy();
-    expect(queryByText('Job not found')).toBeNull();
+    const { getByText } = await render(<JobDetails />);
+    expect(getByText('Job not found')).toBeTruthy();
   });
 
   it('renders the job details with a rich-text description', async () => {

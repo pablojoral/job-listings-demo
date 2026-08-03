@@ -65,7 +65,7 @@ describe('JobCard', () => {
 
   it('removes a favorited job from the heart', async () => {
     const job = makeJob({ id: 7 });
-    await act(() => useFavoritesStore.getState().toggleFavorite(job));
+    await act(() => useFavoritesStore.getState().toggleFavorite(job.id));
 
     const { getByLabelText } = await render(<JobCard job={job} />);
     await fireEvent.press(getByLabelText('Remove from favorites'));

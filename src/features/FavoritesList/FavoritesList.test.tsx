@@ -40,26 +40,25 @@ describe('FavoritesList', () => {
     const favorite = makeJob({ id: 1, title: 'Favorited Engineer' });
     const other = makeJob({ id: 2, title: 'Other Engineer' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 2, totalJobCount: 2, jobs: [favorite, other] } });
-    await act(() => useFavoritesStore.getState().toggleFavorite(favorite));
+    await act(() => useFavoritesStore.getState().toggleFavorite(favorite.id));
 
     const { getByText, queryByText } = await render(<FavoritesList />);
     expect(getByText('Favorited Engineer')).toBeTruthy();
     expect(queryByText('Other Engineer')).toBeNull();
   });
 
-  it('renders a favorited job from its snapshot after it expires off the API list', async () => {
-    const expired = makeJob({ id: 3, title: 'Expired Engineer' });
+  it('skips a favorited id whose listing expired off the API list', async () => {
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 0, totalJobCount: 0, jobs: [] } });
-    await act(() => useFavoritesStore.getState().toggleFavorite(expired));
+    await act(() => useFavoritesStore.getState().toggleFavorite(3));
 
     const { getByText } = await render(<FavoritesList />);
-    expect(getByText('Expired Engineer')).toBeTruthy();
+    expect(getByText('No favorites yet')).toBeTruthy();
   });
 
   it('removes a job from the list when its heart is tapped', async () => {
     const favorite = makeJob({ id: 1, title: 'Favorited Engineer' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [favorite] } });
-    await act(() => useFavoritesStore.getState().toggleFavorite(favorite));
+    await act(() => useFavoritesStore.getState().toggleFavorite(favorite.id));
 
     const { getByLabelText, getByText, queryByText } = await render(<FavoritesList />);
     await fireEvent.press(getByLabelText('Remove from favorites'));
@@ -71,7 +70,7 @@ describe('FavoritesList', () => {
   it('navigates to the listing details when a card is pressed', async () => {
     const favorite = makeJob({ id: 1, title: 'Favorited Engineer' });
     mockUseJobs.mockReturnValue({ ...baseResult, data: { jobCount: 1, totalJobCount: 1, jobs: [favorite] } });
-    await act(() => useFavoritesStore.getState().toggleFavorite(favorite));
+    await act(() => useFavoritesStore.getState().toggleFavorite(favorite.id));
 
     const { getByText } = await render(<FavoritesList />);
     await fireEvent.press(getByText('Favorited Engineer'));

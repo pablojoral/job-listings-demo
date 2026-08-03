@@ -11,7 +11,7 @@ export const useJobCard = (job: Job, onPress?: (job: Job) => void) => {
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
 
   const handleToggleFavorite = () => {
-    toggleFavorite(job);
+    toggleFavorite(job.id);
   };
 
   const handlePress = onPress ? () => onPress(job) : undefined;
